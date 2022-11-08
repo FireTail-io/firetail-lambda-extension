@@ -1,0 +1,19 @@
+service: aws-python-simple-http-endpoint
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.8
+  environment:
+    FIRETAIL_TOKEN: TEST_TOKEN
+
+functions:
+  currentTime:
+    handler: handler.endpoint
+    events:
+      - httpApi:
+          path: /time
+          method: get
+
+plugins:
+  - serverless-offline
