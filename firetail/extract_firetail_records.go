@@ -1,4 +1,4 @@
-package main
+package firetail
 
 import (
 	"encoding/base64"
@@ -8,38 +8,8 @@ import (
 	"strings"
 )
 
-func decodeFiretailRecord(record string) (*FiretailRecord, error) {
-	firetailToken := os.Getenv("FIRETAIL_TOKEN")
-
-	recordParts := strings.Split(record, ":")
-
-	if len(recordParts) != 3 {
-		return nil, fmt.Errorf("record had %d parts when split by ':'", len(recordParts))
-	}
-
-	if recordParts[0] != "firetail" {
-		return nil, fmt.Errorf("record did not have firetail prefix")
-	}
-
-	if recordParts[1] != firetailToken {
-		return nil, fmt.Errorf("firetail prefixed record did not have valid token")
-	}
-
-	recordPayload, err := base64.StdEncoding.DecodeString(recordParts[2])
-	if err != nil {
-		return nil, fmt.Errorf("failed to b64 decode firetail record, err:", err.Error())
-	}
-
-	firetailRecord, err := UnmarshalFiretailRecord([]byte(recordPayload))
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal firetail event: %s", err.Error())
-	}
-
-	return &firetailRecord, nil
-}
-
-func extractFiretailRecords(logBytes []byte) ([]FiretailRecord, []error) {
-	firetailRecords := []FiretailRecord{}
+func ExtractFiretailRecords(logBytes []byte) ([]Record, []error) {
+	firetailRecords := []Record{}
 	errs := []error{}
 
 	// Unmarshal the logBytes into an array of AWS Lambda Log API event items
@@ -79,4 +49,34 @@ func extractFiretailRecords(logBytes []byte) ([]FiretailRecord, []error) {
 	}
 
 	return firetailRecords, errs
+}
+
+func decodeFiretailRecord(record string) (*Record, error) {
+	firetailToken := os.Getenv("FIRETAIL_LOGGING_UUID")
+
+	recordParts := strings.Split(record, ":")
+
+	if len(recordParts) != 3 {
+		return nil, fmt.Errorf("record had %d parts when split by ':'", len(recordParts))
+	}
+
+	if recordParts[0] != "firetail" {
+		return nil, fmt.Errorf("record did not have firetail prefix")
+	}
+
+	if recordParts[1] != firetailToken {
+		return nil, fmt.Errorf("firetail prefixed record did not have valid token")
+	}
+
+	recordPayload, err := base64.StdEncoding.DecodeString(recordParts[2])
+	if err != nil {
+		return nil, fmt.Errorf("failed to b64 decode firetail record, err: %s", err.Error())
+	}
+
+	firetailRecord, err := UnmarshalRecord([]byte(recordPayload))
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal firetail event: %s", err.Error())
+	}
+
+	return &firetailRecord, nil
 }

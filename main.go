@@ -7,6 +7,7 @@ import (
 	"context"
 	"firetail-lambda-extension/agent"
 	"firetail-lambda-extension/extension"
+	"firetail-lambda-extension/firetail"
 	"firetail-lambda-extension/logsapi"
 	"fmt"
 	"log"
@@ -24,8 +25,15 @@ func main() {
 	log.SetPrefix(fmt.Sprintf("[%s] ", extensionName))
 	log.Println("Started...")
 
-	firetailToken := os.Getenv("FIRETAIL_TOKEN")
-	log.Println("FIRETAIL_TOKEN:", firetailToken)
+	// Get API url & API token from env vars
+	firetailApiUrl := os.Getenv("FIRETAIL_API_URL")
+	if firetailApiUrl == "" {
+		log.Fatal("FIRETAIL_API_URL not set")
+	}
+	firetailApiToken := os.Getenv("FIRETAIL_API_TOKEN")
+	if firetailApiToken == "" {
+		log.Fatal("FIRETAIL_API_TOKEN not set")
+	}
 
 	// Create a context with which we'll perform all our actions & make a channel to receive
 	// SIGTERM and SIGINT events & spawn a goroutine to call cancel() when we get one
@@ -61,21 +69,32 @@ func main() {
 				}
 
 				// Extract any firetail records from the log bytes
-				firetailRecords, errs := extractFiretailRecords(logs)
+				firetailRecords, errs := firetail.ExtractFiretailRecords(logs)
 
-				// Construct an err string from any returned errors
-				errString := ""
-				for i, err := range errs {
-					if i > 0 {
-						errString += ", "
+				// Log any errs
+				if len(errs) > 0 {
+					errString := "'"
+					for i, err := range errs {
+						if i > 0 {
+							errString += "', '"
+						}
+						errString += err.Error()
 					}
-					errString += err.Error()
+					errString += "'"
+					log.Println("Errs extracting firetail records:", errString)
 				}
 
-				// Log the records & errs
-				log.Printf("Extracted firetail records: %v; errs: %s", firetailRecords, errString)
+				// Log any extracted records
+				if len(firetailRecords) > 0 {
+					log.Printf("Extracted firetail records: %v", firetailRecords)
+				}
 
-				// If we're reading until logsapi.RuntimeDone, check if logs contains logsapi.RuntimeDone - if it does, break
+				err := firetail.SendRecordsToSaaS(firetailRecords, firetailApiUrl, firetailApiToken)
+				if err != nil {
+					log.Println("Err sending logs to Firetail SaaS, err:", err.Error())
+				}
+
+				// Check if logs contains logsapi.RuntimeDone - if it does, this routine needs to exit.
 				// TODO: this should be FAR more strict - if the string "platform.runtimeDone" appears in ANY function logs, this routine will exit.
 				if strings.Contains(fmt.Sprintf("%v", logs), string(logsapi.RuntimeDone)) {
 					log.Println("found logsapi.RuntimeDone in logs string, readFromLogsQueue exiting...")
@@ -117,8 +136,8 @@ func main() {
 			switch res.EventType {
 			case extension.Shutdown:
 				// Exit if we receive a SHUTDOWN event
-				close(logQueue)
 				logsApiAgent.Shutdown()
+				close(logQueue)
 				return
 			}
 		}
