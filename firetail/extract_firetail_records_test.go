@@ -5,16 +5,12 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/aws/aws-lambda-go/events"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestDecodeFiretailRecordHappy(t *testing.T) {
-	testRecord := Record{
-		Event:    events.APIGatewayProxyRequest{},
-		Response: RecordResponse{},
-	}
+	testRecord := Record{}
 	testPayloadBytes, err := json.Marshal(testRecord)
 	require.Nil(t, err)
 
