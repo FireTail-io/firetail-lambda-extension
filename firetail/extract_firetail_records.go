@@ -25,7 +25,7 @@ func ExtractFiretailRecords(logBytes []byte) ([]Record, []error) {
 	}
 
 	// For each event item, if they are a function event, and their record field is a string, then try to decode
-	// it as a firetail event record. If it is, then log it!
+	// it as a firetail event record. If it is, append it to the slice of firetail records!
 	for _, logEvent := range logEventArray {
 
 		if logEvent.Type != "function" {

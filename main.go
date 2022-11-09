@@ -59,7 +59,6 @@ func main() {
 
 	// Start a receiver routine for logQueue that'll run until logQueue is closed or a logsapi.RuntimeDone event is received
 	go func() {
-		// While the log queue is not empty, or forever if we're reading until we receive logsapi.RuntimeDone
 		for {
 			select {
 			case logs, open := <-logQueue:
@@ -89,6 +88,7 @@ func main() {
 					log.Printf("Extracted firetail records: %v", firetailRecords)
 				}
 
+				// Send the logs to Firetail SaaS
 				err := firetail.SendRecordsToSaaS(firetailRecords, firetailApiUrl, firetailApiToken)
 				if err != nil {
 					log.Println("Err sending logs to Firetail SaaS, err:", err.Error())
