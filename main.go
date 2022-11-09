@@ -87,11 +87,6 @@ func main() {
 					log.Println("Errs extracting firetail records:", errString)
 				}
 
-				// Log any extracted records
-				if len(firetailRecords) > 0 {
-					log.Printf("Extracted firetail records: %v", firetailRecords)
-				}
-
 				// Send the logs to Firetail SaaS
 				err := firetail.SendRecordsToSaaS(firetailRecords, firetailApiUrl, firetailApiToken)
 				if err != nil {
