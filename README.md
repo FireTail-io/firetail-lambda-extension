@@ -14,7 +14,9 @@ A [makefile](./makefile) is provided. To build the extension, package it into a 
 make publish REGION=your-region
 ```
 
-This will output the ARN of your layer which you can then use to add it to a function:
+The command above will output the ARN of your layer.
+
+You can then use the layer's ARN to add it to a function as follows:
 
 ```bash
 make add REGION=your-region LAYER_ARN=your:extension:arn FUNCTION_NAME=your-function-name
