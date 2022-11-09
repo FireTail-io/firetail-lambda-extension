@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func ExtractFiretailRecords(logBytes []byte, firetailLogsUuid string) ([]Record, []error) {
+func ExtractFiretailRecords(logBytes []byte) ([]Record, []error) {
 	firetailRecords := []Record{}
 	errs := []error{}
 
@@ -38,7 +38,7 @@ func ExtractFiretailRecords(logBytes []byte, firetailLogsUuid string) ([]Record,
 			continue
 		}
 
-		firetailRecord, err := decodeFiretailRecord(functionRecord, firetailLogsUuid)
+		firetailRecord, err := decodeFiretailRecord(functionRecord)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("Err decoding event record as firetail event, err: %s", err.Error()))
 			continue
@@ -50,7 +50,7 @@ func ExtractFiretailRecords(logBytes []byte, firetailLogsUuid string) ([]Record,
 	return firetailRecords, errs
 }
 
-func decodeFiretailRecord(record, expectedUuid string) (*Record, error) {
+func decodeFiretailRecord(record string) (*Record, error) {
 	recordParts := strings.Split(record, ":")
 
 	if len(recordParts) != 3 {
@@ -61,7 +61,7 @@ func decodeFiretailRecord(record, expectedUuid string) (*Record, error) {
 		return nil, fmt.Errorf("record did not have firetail prefix")
 	}
 
-	if recordParts[1] != expectedUuid {
+	if recordParts[1] != "log-ext" {
 		return nil, fmt.Errorf("firetail prefixed record did not have valid token")
 	}
 

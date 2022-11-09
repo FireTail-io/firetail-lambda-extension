@@ -5,7 +5,6 @@ provider:
   name: aws
   runtime: python3.8
   environment:
-    FIRETAIL_LOGGING_UUID: 3154b8f8-fcec-47a6-bd06-8964f1c0b30d
     FIRETAIL_API_URL: https://api.logging.eu-west-1.sandbox.firetail.app/logs/bulk
     FIRETAIL_API_TOKEN: your-api-token
 
