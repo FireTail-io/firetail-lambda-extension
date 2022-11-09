@@ -13,7 +13,7 @@ functions:
   currentTime:
     handler: handler.endpoint
     events:
-      - httpApi:
+      - http:
           path: /time
           method: get
 
