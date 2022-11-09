@@ -1,3 +1,7 @@
+.PHONY: test
+test:
+	go test ./... -race -coverprofile coverage.out -covermode atomic
+
 .PHONY: build
 build:
 	GOOS=linux GOARCH=amd64 go build -o bin/extensions/go-example-logs-api-extension

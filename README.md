@@ -4,6 +4,12 @@ This extension is a proof of concept using the Lambda Logs API to extract reques
 
 
 
+## Tests
+
+Automated testing is setup with the `testing` package, using [github.com/stretchr/testify](https://pkg.go.dev/github.com/stretchr/testify) for shorthand assertions. You can run them with `go test`, or use the provided [Makefile](./Makefile)'s `build` target.
+
+
+
 ## Deployment
 
 You will need to install the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html), [Golang](https://go.dev/doc/install) and [JQ](https://stedolan.github.io/jq/).
