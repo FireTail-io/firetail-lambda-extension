@@ -1,0 +1,34 @@
+name: Build from release
+
+# Trigger the create release workflow
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        required: true
+        type: string
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+jobs:
+  build-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::453671210445:role/firetail-sandbox-github-release-access
+          role-session-name: github
+      - uses: actions/checkout@v3
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Login to Amazon ECR
+        run: |
+          make publish ARCH=amd64 region=${env.aws-region} version=${env.RELEASE_VERSION}
+        with:
+          aws-region: eu-west-1
+          layer_name: firetail-sandbox-lambda-extension
