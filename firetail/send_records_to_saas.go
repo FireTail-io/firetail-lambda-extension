@@ -14,18 +14,16 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) error {
 	reqBytes := []byte{}
 
 	for _, record := range records {
+		logEntryRequest, err := record.getLogEntryRequest()
+		if err != nil {
+			log.Println("Err creating log entry request value, err:", err.Error())
+			continue
+		}
+
 		logEntryBytes, err := json.Marshal(LogEntry{
 			DateCreated:   time.Now().UnixMilli(),
 			ExecutionTime: 0,
-			Request: LogEntryRequest{
-				Body:         record.Event.Body,
-				Headers:      map[string][]string{},
-				HTTPProtocol: LogEntryHTTPProtocol(record.Event.RequestContext.Protocol),
-				IP:           record.Event.RequestContext.Identity.SourceIP,
-				Method:       LogEntryMethod(record.Event.RequestContext.HTTPMethod),
-				URI:          "https://" + record.Event.RequestContext.DomainName + record.Event.RequestContext.Path,
-				Resource:     record.Event.Resource,
-			},
+			Request:       *logEntryRequest,
 			Response: LogEntryResponse{
 				Body:       record.Response.Body,
 				Headers:    map[string][]string{},
