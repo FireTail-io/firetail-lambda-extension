@@ -4,11 +4,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 )
 
-func ExtractFiretailRecords(logBytes []byte) ([]Record, []error) {
+func ExtractFiretailRecords(logBytes []byte, firetailLogsUuid string) ([]Record, []error) {
 	firetailRecords := []Record{}
 	errs := []error{}
 
@@ -39,7 +38,7 @@ func ExtractFiretailRecords(logBytes []byte) ([]Record, []error) {
 			continue
 		}
 
-		firetailRecord, err := decodeFiretailRecord(functionRecord)
+		firetailRecord, err := decodeFiretailRecord(functionRecord, firetailLogsUuid)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("Err decoding event record as firetail event, err: %s", err.Error()))
 			continue
@@ -51,9 +50,7 @@ func ExtractFiretailRecords(logBytes []byte) ([]Record, []error) {
 	return firetailRecords, errs
 }
 
-func decodeFiretailRecord(record string) (*Record, error) {
-	firetailToken := os.Getenv("FIRETAIL_LOGGING_UUID")
-
+func decodeFiretailRecord(record, expectedUuid string) (*Record, error) {
 	recordParts := strings.Split(record, ":")
 
 	if len(recordParts) != 3 {
@@ -64,7 +61,7 @@ func decodeFiretailRecord(record string) (*Record, error) {
 		return nil, fmt.Errorf("record did not have firetail prefix")
 	}
 
-	if recordParts[1] != firetailToken {
+	if recordParts[1] != expectedUuid {
 		return nil, fmt.Errorf("firetail prefixed record did not have valid token")
 	}
 

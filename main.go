@@ -34,6 +34,10 @@ func main() {
 	if firetailApiToken == "" {
 		log.Fatal("FIRETAIL_API_TOKEN not set")
 	}
+	firetailLogsUuid := os.Getenv("FIRETAIL_LOGGING_UUID")
+	if firetailLogsUuid == "" {
+		log.Fatal("FIRETAIL_LOGGING_UUID not set")
+	}
 
 	// Create a context with which we'll perform all our actions & make a channel to receive
 	// SIGTERM and SIGINT events & spawn a goroutine to call cancel() when we get one
@@ -68,7 +72,7 @@ func main() {
 				}
 
 				// Extract any firetail records from the log bytes
-				firetailRecords, errs := firetail.ExtractFiretailRecords(logs)
+				firetailRecords, errs := firetail.ExtractFiretailRecords(logs, firetailLogsUuid)
 
 				// Log any errs
 				if len(errs) > 0 {
