@@ -16,7 +16,7 @@ def firetail_logger(logging_uuid):
             print("firetail:%s:%s" % (logging_uuid, log_payload))
 
             # Ensure the execution time is >25ms to give the logs API time to propagate our print() to the extension.
-            time.sleep(max(time.time() - start_time + 500/1000, 0))
+            time.sleep(max(500/1000 - (time.time() - start_time), 0))
 
             # Return the response from down the chain
             return response
