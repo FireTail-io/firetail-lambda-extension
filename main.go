@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"firetail-lambda-extension/agent"
 	"firetail-lambda-extension/extension"
 	"firetail-lambda-extension/firetail"
@@ -14,7 +15,6 @@ import (
 	"os"
 	"os/signal"
 	"path"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -79,24 +79,25 @@ func main() {
 				// Log any errs, but still continue as it's possible not all failed
 				if errs != nil {
 					log.Println("Errs extracting firetail records:", errs.Error())
-						}
+				}
 				// If there's no firetail records, then all failed or there were none, so there's nothing to do
 				if len(firetailRecords) == 0 {
 					log.Println("No firetail records extracted. Continuing...")
 					continue
 				}
 
-				// Send the logs to Firetail SaaS
-				err := firetail.SendRecordsToSaaS(firetailRecords, firetailApiUrl, firetailApiToken)
+				// Send the Firetail records to Firetail SaaS
+				recordsSent, err := firetail.SendRecordsToSaaS(firetailRecords, firetailApiUrl, firetailApiToken)
+				log.Printf("Sent %d record(s) to Firetail.\n", recordsSent)
 				if err != nil {
-					log.Println("Err sending logs to Firetail SaaS, err:", err.Error())
+					log.Println("Err sending record(s) to Firetail SaaS, err:", err.Error())
 				}
 
 				// Check if logMessages contains a message of type logsapi.RuntimeDone - if it does, this routine needs to exit.
 				for _, logMessage := range logMessages {
 					if logMessage.Type == string(logsapi.RuntimeDone) {
 						log.Println("Found log message of type logsapi.RuntimeDone, logQueue receiver routine exiting...")
-					return
+						return
 					}
 				}
 			default:
