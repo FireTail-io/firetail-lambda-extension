@@ -6,6 +6,10 @@ AWS_amd64 := x86_64
 AWS_arm64 := arm64
 AWS_ARCH := $(AWS_$(ARCH))
 
+.PHONY: test
+test:
+	go test ./... -race -coverprofile coverage.out -covermode atomic
+
 .PHONY: build
 build:
 	rm build/ -R --force
