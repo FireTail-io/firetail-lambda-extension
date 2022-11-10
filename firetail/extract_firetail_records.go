@@ -3,44 +3,35 @@ package firetail
 import (
 	"encoding/base64"
 	"encoding/json"
+	"firetail-lambda-extension/logsapi"
 	"fmt"
 	"strings"
+
+	"github.com/hashicorp/go-multierror"
 )
 
-func ExtractFiretailRecords(logBytes []byte) ([]Record, []error) {
+func ExtractFiretailRecords(logMessages logsapi.LogMessages) ([]Record, error) {
 	firetailRecords := []Record{}
-	errs := []error{}
-
-	// Unmarshal the logBytes into an array of AWS Lambda Log API event items
-	type LogEventItem struct {
-		Time   string      `json:"time"`
-		Type   string      `json:"type"`
-		Record interface{} `json:"record"`
-	}
-	var logEventArray []LogEventItem
-	err := json.Unmarshal([]byte(logBytes), &logEventArray)
-	if err != nil {
-		return firetailRecords, []error{err}
-	}
+	var errs error
 
 	// For each event item, if they are a function event, and their record field is a string, then try to decode
 	// it as a firetail event record. If it is, append it to the slice of firetail records!
-	for _, logEvent := range logEventArray {
+	for _, logMessage := range logMessages {
 
-		if logEvent.Type != "function" {
-			errs = append(errs, fmt.Errorf("logEvent type is '%s', not 'function'", logEvent.Type))
+		if logMessage.Type != "function" {
+			errs = multierror.Append(errs, fmt.Errorf("logMessage type is '%s', not 'function'", logMessage.Type))
 			continue
 		}
 
-		functionRecord, ok := logEvent.Record.(string)
-		if !ok {
-			errs = append(errs, fmt.Errorf("logEvent.Record could not be asserted to string"))
-			continue
-		}
-
-		firetailRecord, err := decodeFiretailRecord(functionRecord)
+		var unmarshalledRecord string
+		err := json.Unmarshal(logMessage.Record, &unmarshalledRecord)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("Err decoding event record as firetail event, err: %s", err.Error()))
+			errs = multierror.Append(errs, fmt.Errorf("Err unmarshalling event record as string, err: %s", err.Error()))
+		}
+
+		firetailRecord, err := decodeFiretailRecord(unmarshalledRecord)
+		if err != nil {
+			errs = multierror.Append(errs, fmt.Errorf("Err decoding event record as firetail event, err: %s", err.Error()))
 			continue
 		}
 
