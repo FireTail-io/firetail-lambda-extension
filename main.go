@@ -61,26 +61,29 @@ func main() {
 	go func() {
 		for {
 			select {
-			case logs, open := <-logQueue:
+			case logBytes, open := <-logQueue:
 				if !open {
 					log.Println("queue channel closed, readFromLogsQueue exiting...")
 					return
 				}
 
-				// Extract any firetail records from the log bytes
-				firetailRecords, errs := firetail.ExtractFiretailRecords(logs)
+				// Unmarshal the bytes into a LogMessages
+				var logMessages logsapi.LogMessages
+				err := json.Unmarshal([]byte(logBytes), &logMessages)
+				if err != nil {
+					log.Println("Err unmarshalling logBytes into logsapi.LogMessages, err:", err.Error())
+				}
 
-				// Log any errs
-				if len(errs) > 0 {
-					errString := "'"
-					for i, err := range errs {
-						if i > 0 {
-							errString += "', '"
+				// Extract any firetail records from the log messages
+				firetailRecords, errs := firetail.ExtractFiretailRecords(logMessages)
+				// Log any errs, but still continue as it's possible not all failed
+				if errs != nil {
+					log.Println("Errs extracting firetail records:", errs.Error())
 						}
-						errString += err.Error()
-					}
-					errString += "'"
-					log.Println("Errs extracting firetail records:", errString)
+				// If there's no firetail records, then all failed or there were none, so there's nothing to do
+				if len(firetailRecords) == 0 {
+					log.Println("No firetail records extracted. Continuing...")
+					continue
 				}
 
 				// Send the logs to Firetail SaaS
@@ -89,11 +92,12 @@ func main() {
 					log.Println("Err sending logs to Firetail SaaS, err:", err.Error())
 				}
 
-				// Check if logs contains logsapi.RuntimeDone - if it does, this routine needs to exit.
-				// TODO: this should be FAR more strict - if the string "platform.runtimeDone" appears in ANY function logs, this routine will exit.
-				if strings.Contains(fmt.Sprintf("%v", logs), string(logsapi.RuntimeDone)) {
-					log.Println("found logsapi.RuntimeDone in logs string, readFromLogsQueue exiting...")
+				// Check if logMessages contains a message of type logsapi.RuntimeDone - if it does, this routine needs to exit.
+				for _, logMessage := range logMessages {
+					if logMessage.Type == string(logsapi.RuntimeDone) {
+						log.Println("Found log message of type logsapi.RuntimeDone, logQueue receiver routine exiting...")
 					return
+					}
 				}
 			default:
 				time.Sleep(time.Nanosecond)
