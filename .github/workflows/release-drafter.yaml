@@ -1,22 +1,19 @@
 name: build go extension for lambda
 
 on:
-  - pull_request
+  pull_request:
+    branches:
+      - main
+
 permissions:
-  id-token: write
   contents: write
   pull-requests: write
+
 jobs:
   build-go:
     runs-on: ubuntu-latest
     steps:
-      - name: draft release
+      - name: Draft release
         uses: release-drafter/release-drafter@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-      - name: Build, tag, and push image to Amazon ECR
-        run: |
-          make build
