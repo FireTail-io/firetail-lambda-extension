@@ -1,6 +1,7 @@
 ARCH := amd64
 VERSION := latest
-LAYER_NAME := firetail-extension-${ARCH}-${VERSION//[.]/-}
+AWS_VERSION := latest
+LAYER_NAME := firetail-extension-${ARCH}-${AWS_VERSION}
 REGION := eu-west-1
 AWS_amd64 := x86_64
 AWS_arm64 := arm64
