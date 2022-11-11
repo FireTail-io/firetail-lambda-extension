@@ -75,7 +75,7 @@ jobs:
           aws lambda add-layer-version-permission \
             --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} \
             --statement-id publicAccess --principal * --action lambda:GetLayerVersion \
-            --region ${{ matrix.aws-region }})
+            --region ${{ matrix.aws-region }}
 
       - name: Publish arm64 layer to AWS
         run: |
@@ -84,4 +84,4 @@ jobs:
           aws lambda add-layer-version-permission \
             --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} \
             --statement-id publicAccess --principal * --action lambda:GetLayerVersion \
-            --region ${{ matrix.aws-region }})
+            --region ${{ matrix.aws-region }}
