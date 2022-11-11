@@ -60,28 +60,18 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: firetail-lambda-extension-amd64-${{ env.RELEASE_VERSION }}
-          path: build/firetail-extension-amd64.zip
+          path: build/firetail-extension-amd64-${{ env.RELEASE_VERSION }}.zip
 
       - name: Download arm64 package artifact
         uses: actions/download-artifact@v3
         with:
           name: firetail-lambda-extension-arm64-${{ env.RELEASE_VERSION }}
-          path: build/firetail-extension-arm64.zip
+          path: build/firetail-extension-arm64-${{ env.RELEASE_VERSION }}.zip
 
       - name: Publish amd64 layer to AWS
         run: |
-          LAYER_ARN=$(make publish ARCH=amd64 VERSION=$RELEASE_VERSION REGION=${{ matrix.aws-region }})
-          echo $LAYER_ARN
-          aws lambda add-layer-version-permission 
-            --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} 
-            --statement-id publicAccess --principal * --action lambda:GetLayerVersion
-            --region ${{ matrix.aws-region }})
+          make publish ARCH=amd64 VERSION=$RELEASE_VERSION REGION=${{ matrix.aws-region }}
 
       - name: Publish arm64 layer to AWS
         run: |
-          LAYER_ARN=$(make publish ARCH=arm64 VERSION=$RELEASE_VERSION REGION=${{ matrix.aws-region }})
-          echo $LAYER_ARN
-          aws lambda add-layer-version-permission 
-            --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:}
-            --statement-id publicAccess --principal * --action lambda:GetLayerVersion
-            --region ${{ matrix.aws-region }})
+          make publish ARCH=arm64 VERSION=$RELEASE_VERSION REGION=${{ matrix.aws-region }}

@@ -22,7 +22,13 @@ package: build
 
 .PHONY: publish
 publish:
-	@aws lambda publish-layer-version --layer-name "${LAYER_NAME}" --compatible-architectures "${AWS_ARCH}" --region "${REGION}" --zip-file  "fileb://build/firetail-extension-${ARCH}-${VERSION}.zip" | jq -r '.LayerVersionArn'
+	@aws lambda publish-layer-version \
+		--layer-name "${LAYER_NAME}" \
+		--compatible-architectures "${AWS_ARCH}" \
+		--region "${REGION}" \
+		--zip-file  "fileb://build/firetail-extension-${ARCH}-${VERSION}.zip" \
+		--statement-id publicAccess --principal * --action lambda:GetLayerVersion \
+		| jq -r '.LayerVersionArn'
 	
 .PHONY: add
 add: 
