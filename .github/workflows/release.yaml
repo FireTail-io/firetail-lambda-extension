@@ -1,8 +1,6 @@
 name: Build from release
 
 on:
-  push:
-
   release:
     types: [published]
 
