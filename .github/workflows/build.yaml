@@ -1,4 +1,4 @@
-name: build go extension for lambda
+name: Create draft release, test & build draft package
 
 on:
   push:
