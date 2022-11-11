@@ -24,6 +24,7 @@ package: build
 .PHONY: publish
 publish:
 	LAYER_VERSION=$(aws lambda publish-layer-version --layer-name "${AWS_LAYER_NAME}" --compatible-architectures "${AWS_ARCH}" --region "${AWS_REGION}" --zip-file  "fileb://build/firetail-extension-${ARCH}-${VERSION}.zip" | jq -r '.Version')
+	echo ${LAYER_VERSION}
 	aws lambda add-layer-version-permission --layer-name ${AWS_LAYER_NAME} --version-number ${LAYER_VERSION} --statement-id "publicAccess" --principal "*" --action lambda:GetLayerVersion --region ${{ matrix.aws-region }}
 
 .PHONY: add
