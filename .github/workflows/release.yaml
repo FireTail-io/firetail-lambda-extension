@@ -42,7 +42,7 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        aws-region: [ 'eu-west-1', 'eu-west-2' ]
+        aws-region: [ 'eu-west-1', 'eu-west-2', 'ap-southeast-1', 'ap-southeast-2', 'us-west-1', 'us-west-2', 'us-east-1' ]
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
