@@ -27,7 +27,7 @@ publish:
 
 .PHONY: public
 public:
-	aws lambda add-layer-version-permission --layer-name ${AWS_LAYER_NAME} --version-number ${AWS_LAYER_VERSION} --statement-id "publicAccess" --principal "*" --action lambda:GetLayerVersion --region "${AWS_REGION}"
+	aws lambda add-layer-version-permission --layer-name ${AWS_LAYER_NAME} --version-number ${AWS_LAYER_VERSION} --statement-id "${AWS_LAYER_NAME}-${AWS_LAYER_VERSION}-publicAccess" --principal "*" --action lambda:GetLayerVersion --region "${AWS_REGION}"
 
 .PHONY: add
 add: 
