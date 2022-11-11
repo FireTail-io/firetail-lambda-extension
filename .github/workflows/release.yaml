@@ -78,4 +78,4 @@ jobs:
       - name: Publish arm64 layer to AWS
         run: |
           AWS_LAYER_VERSION=$(make publish ARCH=arm64 VERSION=$RELEASE_VERSION AWS_VERSION=$AWS_RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }})
-          make public ARCH=amd64 AWS_LAYER_VERSION=$AWS_LAYER_VERSION AWS_VERSION=$AWS_RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }}
+          make public ARCH=arm64 AWS_LAYER_VERSION=$AWS_LAYER_VERSION AWS_VERSION=$AWS_RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }}
