@@ -63,6 +63,4 @@ jobs:
           echo $LAYER_ARN
           aws lambda add-layer-version-permission 
             --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} 
-            --statement-id publicAccess
-            --principal *
-            --action lambda:GetLayerVersion
+            --statement-id publicAccess --principal * --action lambda:GetLayerVersion
