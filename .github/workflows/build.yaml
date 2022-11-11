@@ -1,0 +1,51 @@
+name: Create draft release, test & build draft package
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Draft release
+        uses: release-drafter/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  run-tests:
+    runs-on: ubuntu-latest
+      - uses: actions/checkout@v3
+
+      - name: Run coverage
+        run: docker run --rm -v ${{ github.workspace }}:/src -w /src golang:${{ matrix.go-image }} go test ./... -race -coverprofile coverage.out -covermode atomic
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+
+  build-package:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [ 'amd64', 'arm64' ]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build & package layers (amd64 & arm64)
+        run: |
+          make package ARCH=${{ matrix.arch }}
+
+      - name: Upload package as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: firetail-lambda-extension-${{ matrix.arch }}-draft
+          path: build/firetail-extension-${{ matrix.arch }}-draft.zip

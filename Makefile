@@ -1,19 +1,28 @@
+ARCH := amd64
+VERSION := latest
+LAYER_NAME := firetail-extension-${ARCH}-${VERSION}
+REGION := eu-west-1
+AWS_amd64 := x86_64
+AWS_arm64 := arm64
+AWS_ARCH := $(AWS_$(ARCH))
+
 .PHONY: test
 test:
 	go test ./... -race -coverprofile coverage.out -covermode atomic
 
 .PHONY: build
 build:
-	GOOS=linux GOARCH=amd64 go build -o bin/extensions/go-example-logs-api-extension
-	chmod +x bin/extensions/go-example-logs-api-extension
+	rm -rf build
+	GOOS=linux GOARCH=${ARCH} go build -o build/extensions/firetail-extension-${ARCH}
+	chmod +x build/extensions/firetail-extension-${ARCH}
 
 .PHONY: package
 package: build
-	cd bin && zip -r ../extension.zip extensions/
+	cd build && zip -r ../build/firetail-extension-${ARCH}.zip extensions/
 
 .PHONY: publish
-publish: package
-	aws lambda publish-layer-version --layer-name "go-example-logs-api-extension" --region ${REGION} --zip-file  "fileb://extension.zip" | jq -r '.LayerVersionArn'
+publish:
+	@aws lambda publish-layer-version --layer-name "${LAYER_NAME}" --compatible-architectures "${AWS_ARCH}" --region "${REGION}" --zip-file  "fileb://build/firetail-extension-${ARCH}.zip" | jq -r '.LayerVersionArn'
 	
 .PHONY: add
 add: 
