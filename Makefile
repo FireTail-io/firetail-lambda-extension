@@ -12,7 +12,7 @@ test:
 
 .PHONY: build
 build:
-	rm build/ -R --force
+	rm -rf build
 	GOOS=linux GOARCH=${ARCH} go build -o build/extensions/firetail-extension-${ARCH}
 	chmod +x build/extensions/firetail-extension-${ARCH}
 
