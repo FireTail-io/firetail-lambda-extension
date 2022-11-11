@@ -23,7 +23,7 @@ package: build
 
 .PHONY: publish
 publish:
-	aws lambda publish-layer-version --layer-name "${AWS_LAYER_NAME}" --compatible-architectures "${AWS_ARCH}" --region "${AWS_REGION}" --zip-file  "fileb://build/firetail-extension-${ARCH}-${VERSION}.zip" | jq -r '.Version'
+	@aws lambda publish-layer-version --layer-name "${AWS_LAYER_NAME}" --compatible-architectures "${AWS_ARCH}" --region "${AWS_REGION}" --zip-file  "fileb://build/firetail-extension-${ARCH}-${VERSION}.zip" | jq -r '.Version'
 
 .PHONY: public
 public:
