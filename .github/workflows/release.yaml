@@ -72,16 +72,16 @@ jobs:
         run: |
           LAYER_ARN=$(make publish ARCH=amd64 VERSION=$RELEASE_VERSION REGION=${{ matrix.aws-region }})
           echo $LAYER_ARN
-          aws lambda add-layer-version-permission 
-            --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} 
-            --statement-id publicAccess --principal * --action lambda:GetLayerVersion
+          aws lambda add-layer-version-permission \
+            --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} \
+            --statement-id publicAccess --principal * --action lambda:GetLayerVersion \
             --region ${{ matrix.aws-region }})
 
       - name: Publish arm64 layer to AWS
         run: |
           LAYER_ARN=$(make publish ARCH=arm64 VERSION=$RELEASE_VERSION REGION=${{ matrix.aws-region }})
           echo $LAYER_ARN
-          aws lambda add-layer-version-permission 
-            --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:}
-            --statement-id publicAccess --principal * --action lambda:GetLayerVersion
+          aws lambda add-layer-version-permission \
+            --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} \
+            --statement-id publicAccess --principal * --action lambda:GetLayerVersion \
             --region ${{ matrix.aws-region }})
