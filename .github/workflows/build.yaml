@@ -47,5 +47,5 @@ jobs:
       - name: Upload package as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: firetail-lambda-extension-${{ matrix.arch }}
-          path: build/firetail-extension-${{ matrix.arch }}.zip
+          name: firetail-lambda-extension-${{ matrix.arch }}-draft
+          path: build/firetail-extension-${{ matrix.arch }}-draft.zip

@@ -16,6 +16,27 @@ permissions:
   pull-requests: write
 
 jobs:
+  build-package:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [ 'amd64', 'arm64' ]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set RELEASE_VERSION
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Build & package layers (amd64 & arm64)
+        run: |
+          make package ARCH=${{ matrix.arch }}
+
+      - name: Upload package as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: firetail-lambda-extension-${{ matrix.arch }}-$RELEASE_VERSION
+          path: build/firetail-extension-${{ matrix.arch }}-$RELEASE_VERSION.zip
+
   publish-package:
     runs-on: ubuntu-latest
     needs: build-package
