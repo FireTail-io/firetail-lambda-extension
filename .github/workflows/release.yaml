@@ -56,7 +56,7 @@ jobs:
       - name: Set RELEASE_VERSION
         run: |
           echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-          echo "RELEASE_VERSION_AWS=$(echo ${GITHUB_REF#refs/*/} | tr '.' '-')" >> $GITHUB_ENV
+          echo "AWS_RELEASE_VERSION=$(echo ${GITHUB_REF#refs/*/} | tr '.' '-')" >> $GITHUB_ENV
 
       - name: Download amd64 package artifact
         uses: actions/download-artifact@v3
@@ -72,12 +72,8 @@ jobs:
 
       - name: Publish amd64 layer to AWS
         run: |
-          LAYER_ARN=$(make publish ARCH=amd64 VERSION=$RELEASE_VERSION AWS_VERSION=$RELEASE_VERSION_AWS REGION=${{ matrix.aws-region }})
-          echo $LAYER_ARN
-          aws lambda add-layer-version-permission --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} --statement-id "publicAccess" --principal "*" --action lambda:GetLayerVersion --region ${{ matrix.aws-region }}
+          LAYER_ARN=$(make publish ARCH=amd64 VERSION=$RELEASE_VERSION AWS_VERSION=$AWS_RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }})
 
       - name: Publish arm64 layer to AWS
         run: |
-          LAYER_ARN=$(make publish ARCH=arm64 VERSION=$RELEASE_VERSION AWS_VERSION=$RELEASE_VERSION_AWS REGION=${{ matrix.aws-region }})
-          echo $LAYER_ARN
-          aws lambda add-layer-version-permission --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} --statement-id "publicAccess" --principal "*" --action lambda:GetLayerVersion --region ${{ matrix.aws-region }}
+          LAYER_ARN=$(make publish ARCH=arm64 VERSION=$RELEASE_VERSION AWS_VERSION=$AWS_RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }})
