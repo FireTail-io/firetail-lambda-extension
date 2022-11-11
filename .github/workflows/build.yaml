@@ -20,6 +20,9 @@ jobs:
 
   run-tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-image: [ '1.18-bullseye' ]    
     steps:
       - uses: actions/checkout@v3
 
