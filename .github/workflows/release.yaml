@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [ 'amd64' ]
+        arch: [ 'amd64', 'arm64' ]
     steps:
       - uses: actions/checkout@v3
 
@@ -41,7 +41,7 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        aws-region: [ 'eu-west-1' ]
+        aws-region: [ 'eu-west-1', 'eu-west-2' ]
         arch: [ 'amd64' ]
     steps:
       - name: Download package artifact
