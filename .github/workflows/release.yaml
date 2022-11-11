@@ -34,7 +34,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: firetail-lambda-extension-${{ matrix.arch }}
-          path: build/extension-amd64.zip
+          path: build/firetail-extension-${{ matrix.arch }}.zip
 
   publish-package:
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: firetail-lambda-extension-${{ matrix.arch }}
-          path: build/extension-amd64.zip
+          path: build/firetail-extension-amd64.zip
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -61,3 +61,8 @@ jobs:
         run: |
           LAYER_ARN=$(make publish ARCH=${{ matrix.arch }} VERSION=${{ github.event.release.tag_name }} REGION=${{ matrix.aws-region }})
           echo $LAYER_ARN
+          aws lambda add-layer-version-permission 
+            --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} 
+            --statement-id publicAccess
+            --principal *
+            --action lambda:GetLayerVersion
