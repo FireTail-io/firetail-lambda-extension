@@ -2,7 +2,7 @@ name: Build from release
 
 on:
   push:
-  
+
   release:
     types: [published]
 
@@ -35,6 +35,9 @@ jobs:
 
   publish-package:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        aws-region: [ 'eu-west-1' ]    
     steps:
       - name: Download package artifact
         uses: actions/download-artifact@v3
@@ -45,7 +48,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-region: eu-west-1
+          aws-region: ${{ matrix.aws-region }}
           role-to-assume: arn:aws:iam::453671210445:role/firetail-sandbox-github-release-access
           role-session-name: github
 
@@ -54,7 +57,4 @@ jobs:
 
       - name: Publish layer to AWS
         run: |
-          make publish ARCH=amd64 region=${env.aws-region} version=${env.RELEASE_VERSION}
-        with:
-          aws-region: eu-west-1
-          layer_name: firetail-sandbox-lambda-extension
+          make publish ARCH=amd64 VERSION=${env.RELEASE_VERSION} REGION=${{ matrix.aws-region }}
