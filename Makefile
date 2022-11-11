@@ -21,7 +21,7 @@ package: build
 	cd build && zip -r ../build/extension-${ARCH}.zip extensions/
 
 .PHONY: publish
-publish: package
+publish:
 	aws lambda publish-layer-version --layer-name "${LAYER_NAME}" --compatible-architectures "${AWS_ARCH}" --region "${REGION}" --zip-file  "fileb://build/extension-${ARCH}.zip" | jq -r '.LayerVersionArn'
 	
 .PHONY: add
