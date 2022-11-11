@@ -16,38 +16,13 @@ permissions:
   pull-requests: write
 
 jobs:
-  build-package:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [ 'amd64', 'arm64' ]
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Build & package layers (amd64 & arm64)
-        run: |
-          make package ARCH=${{ matrix.arch }}
-
-      - name: Upload package as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: firetail-lambda-extension-${{ matrix.arch }}
-          path: build/firetail-extension-${{ matrix.arch }}.zip
-
   publish-package:
     runs-on: ubuntu-latest
     needs: build-package
     strategy:
       matrix:
         aws-region: [ 'eu-west-1', 'eu-west-2' ]
-        arch: [ 'amd64', 'arm64' ]
     steps:
-      - name: Download package artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: firetail-lambda-extension-${{ matrix.arch }}
-          path: build/firetail-extension-amd64.zip
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -55,10 +30,35 @@ jobs:
           role-to-assume: arn:aws:iam::453671210445:role/firetail-sandbox-github-release-access
           role-session-name: github
 
-      - name: Publish layer to AWS
+      - name: Download amd64 package artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: firetail-lambda-extension-amd64
+          path: build/firetail-extension-amd64.zip
+
+      - name: Download arm64 package artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: firetail-lambda-extension-arm64
+          path: build/firetail-extension-arm64.zip
+
+      - name: Set RELEASE_VERSION
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Publish amd64 layer to AWS
         run: |
-          LAYER_ARN=$(make publish ARCH=${{ matrix.arch }} VERSION=${{ github.event.release.tag_name }} REGION=${{ matrix.aws-region }})
+          LAYER_ARN=$(make publish ARCH=amd64 VERSION=$RELEASE_VERSION REGION=${{ matrix.aws-region }})
           echo $LAYER_ARN
           aws lambda add-layer-version-permission 
             --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:} 
             --statement-id publicAccess --principal * --action lambda:GetLayerVersion
+            --region ${{ matrix.aws-region }})
+
+      - name: Publish arm64 layer to AWS
+        run: |
+          LAYER_ARN=$(make publish ARCH=arm64 VERSION=$RELEASE_VERSION REGION=${{ matrix.aws-region }})
+          echo $LAYER_ARN
+          aws lambda add-layer-version-permission 
+            --layer-name $LAYER_ARN --version-number ${LAYER_ARN##*:}
+            --statement-id publicAccess --principal * --action lambda:GetLayerVersion
+            --region ${{ matrix.aws-region }})
