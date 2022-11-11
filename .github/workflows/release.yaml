@@ -43,7 +43,7 @@ jobs:
       matrix:
         aws-region: [ 'eu-west-1', 'eu-west-2' ]
         arch: [ 'amd64', 'arm64' ]
-      steps:
+    steps:
       - name: Download package artifact
         uses: actions/download-artifact@v3
         with:
