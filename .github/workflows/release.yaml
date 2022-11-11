@@ -20,17 +20,20 @@ permissions:
 jobs:
   build-package:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [ 'amd64' ]
     steps:
       - uses: actions/checkout@v3
 
       - name: Build & package layers (amd64 & arm64)
         run: |
-          make package ARCH=amd64
+          make package ARCH=${{ matrix.arch }}
 
       - name: Upload package as artifact
         uses: actions/upload-artifact@v3
         with:
-          name: firetail-lambda-extension-${{ env.GITHUB_REF_NAME }}
+          name: firetail-lambda-extension-${{ matrix.arch }}
           path: build/extension-amd64.zip
 
   publish-package:
@@ -38,12 +41,13 @@ jobs:
     needs: build-package
     strategy:
       matrix:
-        aws-region: [ 'eu-west-1' ]    
+        aws-region: [ 'eu-west-1' ]
+        arch: [ 'amd64' ]
     steps:
       - name: Download package artifact
         uses: actions/download-artifact@v3
         with:
-          name: firetail-lambda-extension-${{ env.GITHUB_REF_NAME }}
+          name: firetail-lambda-extension-${{ matrix.arch }}
           path: build/extension-amd64.zip
 
       - name: Configure AWS Credentials
@@ -55,4 +59,4 @@ jobs:
 
       - name: Publish layer to AWS
         run: |
-          make publish ARCH=amd64 VERSION=${{ env.GITHUB_REF_NAME }} REGION=${{ matrix.aws-region }}
+          make publish ARCH=${{ matrix.arch }} VERSION=${{ env.GITHUB_REF_NAME }} REGION=${{ matrix.aws-region }}
