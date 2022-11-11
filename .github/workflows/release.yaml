@@ -59,4 +59,5 @@ jobs:
 
       - name: Publish layer to AWS
         run: |
-          make publish ARCH=${{ matrix.arch }} VERSION=${{ github.event.release.tag_name }} REGION=${{ matrix.aws-region }}
+          LAYER_ARN=$(make publish ARCH=${{ matrix.arch }} VERSION=${{ github.event.release.tag_name }} REGION=${{ matrix.aws-region }})
+          echo $LAYER_ARN
