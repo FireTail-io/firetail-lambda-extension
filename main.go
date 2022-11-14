@@ -149,9 +149,9 @@ func main() {
 				return
 			}
 
-			switch res.EventType {
-			case extension.Shutdown:
-				// Exit if we receive a SHUTDOWN event
+			// Exit if we receive a SHUTDOWN event
+			if res.EventType == extension.Shutdown {
+				debugLog("Received extension shutdown event, exiting...")
 				logsApiAgent.Shutdown()
 				close(logQueue)
 				return
