@@ -15,24 +15,40 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strconv"
 	"syscall"
 	"time"
 )
+
+var debug bool
+
+func debugLog(format string, a ...any) {
+	if debug {
+		log.Printf(format, a...)
+	}
+}
 
 func main() {
 	// Setup logging prefix & log that we've started
 	extensionName := path.Base(os.Args[0])
 	log.SetPrefix(fmt.Sprintf("[%s] ", extensionName))
-	log.Println("Started...")
+
+	// Check if we're running in DEBUG mode
+	debugEnv := os.Getenv("FIRETAIL_EXTENSION_DEBUG")
+	if isDebug, err := strconv.ParseBool(debugEnv); err == nil && isDebug {
+		debug = true
+		debugLog("Firetail extension starting in debug mode")
+	}
 
 	// Get API url & API token from env vars
-	firetailApiUrl := os.Getenv("FIRETAIL_API_URL")
-	if firetailApiUrl == "" {
-		log.Fatal("FIRETAIL_API_URL not set")
-	}
 	firetailApiToken := os.Getenv("FIRETAIL_API_TOKEN")
 	if firetailApiToken == "" {
 		log.Fatal("FIRETAIL_API_TOKEN not set")
+	}
+	firetailApiUrl := os.Getenv("FIRETAIL_API_URL")
+	if firetailApiUrl == "" {
+		firetailApiUrl = "https://api.logging.eu-west-1.sandbox.firetail.app/logs/bulk"
+		debugLog("FIRETAIL_API_URL not set, defaulting to %s", firetailApiUrl)
 	}
 
 	// Create a context with which we'll perform all our actions & make a channel to receive
@@ -42,8 +58,7 @@ func main() {
 	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		s := <-sigs
-		log.Println("Received", s)
-		log.Println("Exiting")
+		debugLog("Received signal '%s'. Exiting...", s.String())
 		cancel()
 	}()
 
@@ -63,7 +78,7 @@ func main() {
 			select {
 			case logBytes, open := <-logQueue:
 				if !open {
-					log.Println("queue channel closed, readFromLogsQueue exiting...")
+					debugLog("Queue channel closed, logQueue recevier routine exiting...")
 					return
 				}
 
@@ -71,32 +86,33 @@ func main() {
 				var logMessages logsapi.LogMessages
 				err := json.Unmarshal([]byte(logBytes), &logMessages)
 				if err != nil {
-					log.Println("Err unmarshalling logBytes into logsapi.LogMessages, err:", err.Error())
+					debugLog("Err unmarshalling logBytes into logsapi.LogMessages, err: %s", err.Error())
 				}
 
 				// Extract any firetail records from the log messages
 				firetailRecords, errs := firetail.ExtractFiretailRecords(logMessages)
 				// Log any errs, but still continue as it's possible not all failed
 				if errs != nil {
-					log.Println("Errs extracting firetail records:", errs.Error())
+					debugLog("Errs extracting firetail records, errs: %s", errs.Error())
 				}
 				// If there's no firetail records, then all failed or there were none, so there's nothing to do
 				if len(firetailRecords) == 0 {
-					log.Println("No firetail records extracted. Continuing...")
+					debugLog("No firetail records extracted. Continuing...")
 					continue
 				}
 
 				// Send the Firetail records to Firetail SaaS
+				debugLog("Sending %d record(s) to Firetail...", len(firetailRecords))
 				recordsSent, err := firetail.SendRecordsToSaaS(firetailRecords, firetailApiUrl, firetailApiToken)
-				log.Printf("Sent %d record(s) to Firetail.\n", recordsSent)
+				debugLog("Sent %d record(s) to Firetail.", recordsSent)
 				if err != nil {
-					log.Println("Err sending record(s) to Firetail SaaS, err:", err.Error())
+					debugLog("Err sending record(s) to Firetail SaaS, err: %s", err.Error())
 				}
 
 				// Check if logMessages contains a message of type logsapi.RuntimeDone - if it does, this routine needs to exit.
 				for _, logMessage := range logMessages {
 					if logMessage.Type == string(logsapi.RuntimeDone) {
-						log.Println("Found log message of type logsapi.RuntimeDone, logQueue receiver routine exiting...")
+						debugLog("Found log message of type logsapi.RuntimeDone, logQueue receiver routine exiting...")
 						return
 					}
 				}
@@ -109,14 +125,14 @@ func main() {
 	// Create a Logs API agent
 	logsApiAgent, err := agent.NewHttpAgent(logQueue)
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err.Error())
 	}
 
 	// Subscribe to the logs API. Logs start being delivered only after the subscription happens.
 	agentID := extensionClient.ExtensionID
 	err = logsApiAgent.Init(agentID)
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err.Error())
 	}
 
 	// This for loop will block until invoke or shutdown event is received or cancelled via the context
@@ -125,11 +141,10 @@ func main() {
 		case <-ctx.Done():
 			return
 		default:
-			log.Println(" Waiting for event...")
+			debugLog("Waiting for event...")
 			res, err := extensionClient.NextEvent(ctx) // This is a blocking call
 			if err != nil {
-				log.Println("Error:", err)
-				log.Println("Exiting")
+				log.Fatal(err.Error())
 				return
 			}
 
