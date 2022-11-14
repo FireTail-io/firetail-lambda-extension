@@ -1,7 +1,8 @@
 ARCH := amd64
 VERSION := latest
-LAYER_NAME := firetail-extension-${ARCH}-${VERSION}
-REGION := eu-west-1
+AWS_VERSION := latest
+AWS_LAYER_NAME := firetail-extension-${ARCH}-${AWS_VERSION}
+AWS_REGION := eu-west-1
 AWS_amd64 := x86_64
 AWS_arm64 := arm64
 AWS_ARCH := $(AWS_$(ARCH))
@@ -18,12 +19,16 @@ build:
 
 .PHONY: package
 package: build
-	cd build && zip -r ../build/firetail-extension-${ARCH}.zip extensions/
+	cd build && zip -r ../build/firetail-extension-${ARCH}-${VERSION}.zip extensions/
 
 .PHONY: publish
 publish:
-	@aws lambda publish-layer-version --layer-name "${LAYER_NAME}" --compatible-architectures "${AWS_ARCH}" --region "${REGION}" --zip-file  "fileb://build/firetail-extension-${ARCH}.zip" | jq -r '.LayerVersionArn'
-	
+	@aws lambda publish-layer-version --layer-name "${AWS_LAYER_NAME}" --compatible-architectures "${AWS_ARCH}" --region "${AWS_REGION}" --zip-file  "fileb://build/firetail-extension-${ARCH}-${VERSION}.zip" | jq -r '.Version'
+
+.PHONY: public
+public:
+	aws lambda add-layer-version-permission --layer-name ${AWS_LAYER_NAME} --version-number ${AWS_LAYER_VERSION} --statement-id "${AWS_LAYER_NAME}-${AWS_LAYER_VERSION}-publicAccess" --principal "*" --action lambda:GetLayerVersion --region "${AWS_REGION}"
+
 .PHONY: add
 add: 
-	aws lambda update-function-configuration --region ${REGION} --function-name ${FUNCTION_NAME} --layers ${LAYER_ARN}
+	aws lambda update-function-configuration --region ${AWS_REGION} --function-name ${FUNCTION_NAME} --layers ${LAYER_ARN}

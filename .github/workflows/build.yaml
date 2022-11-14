@@ -20,6 +20,10 @@ jobs:
 
   run-tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-image: [ '1.18-bullseye' ]    
+    steps:
       - uses: actions/checkout@v3
 
       - name: Run coverage
@@ -42,7 +46,7 @@ jobs:
 
       - name: Build & package layers (amd64 & arm64)
         run: |
-          make package ARCH=${{ matrix.arch }}
+          make package ARCH=${{ matrix.arch }} VERSION=draft
 
       - name: Upload package as artifact
         uses: actions/upload-artifact@v3
