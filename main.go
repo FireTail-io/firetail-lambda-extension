@@ -139,6 +139,7 @@ func main() {
 	for {
 		select {
 		case <-ctx.Done():
+			debugLog("Context cancelled, exiting...")
 			return
 		default:
 			debugLog("Waiting for event...")
