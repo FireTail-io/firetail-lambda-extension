@@ -46,6 +46,9 @@ func (r *Record) getLogEntryRequest() (*LogEntryRequest, error) {
 			URI:          "https://" + apiGatewayV1Request.RequestContext.DomainName + apiGatewayV1Request.RequestContext.Path,
 			Resource:     apiGatewayV1Request.Resource,
 		}
+		if logEntryRequest.Headers == nil {
+			logEntryRequest.Headers = map[string][]string{}
+		}
 		for header, value := range apiGatewayV1Request.Headers {
 			_, hasValues := logEntryRequest.Headers[header]
 			if hasValues {
