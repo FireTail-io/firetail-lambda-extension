@@ -102,6 +102,7 @@ func main() {
 				}
 
 				// Send the Firetail records to Firetail SaaS
+				debugLog("Sending %d record(s) to Firetail...", len(firetailRecords))
 				recordsSent, err := firetail.SendRecordsToSaaS(firetailRecords, firetailApiUrl, firetailApiToken)
 				debugLog("Sent %d record(s) to Firetail.", recordsSent)
 				if err != nil {
