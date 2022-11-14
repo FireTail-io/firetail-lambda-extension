@@ -26,13 +26,14 @@ func main() {
 	log.Println("Started...")
 
 	// Get API url & API token from env vars
-	firetailApiUrl := os.Getenv("FIRETAIL_API_URL")
-	if firetailApiUrl == "" {
-		log.Fatal("FIRETAIL_API_URL not set")
-	}
 	firetailApiToken := os.Getenv("FIRETAIL_API_TOKEN")
 	if firetailApiToken == "" {
 		log.Fatal("FIRETAIL_API_TOKEN not set")
+	}
+	firetailApiUrl := os.Getenv("FIRETAIL_API_URL")
+	if firetailApiUrl == "" {
+		firetailApiUrl = "https://api.logging.eu-west-1.sandbox.firetail.app/logs/bulk"
+		log.Printf("FIRETAIL_API_URL, defaulting to %s", firetailApiUrl)
 	}
 
 	// Create a context with which we'll perform all our actions & make a channel to receive
