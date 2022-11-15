@@ -28,7 +28,7 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 
 		logEntryBytes, err := json.Marshal(LogEntry{
 			DateCreated:   time.Now().UnixMilli(),
-			ExecutionTime: 0,
+			ExecutionTime: record.ExecutionTime,
 			Request:       *logEntryRequest,
 			Response: LogEntryResponse{
 				Body:       record.Response.Body,
