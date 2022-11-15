@@ -59,16 +59,25 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 
 	req.Header.Set("x-ft-api-key", apiKey)
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		// The request has now been made, so we can now say that the marshalledRecords were included in the request sent to Firetail
-		return marshalledRecords, multierror.Append(errs, err)
+	// The current retry implementation here may be prone to double-reporting if the request is successfully sent
+	// to the Firetail API, but the execution is frozen when awaiting the response & a timeout occurs.
+	// TODO: investigate above.
+	var resp *http.Response
+	for retry := 0; retry < 10; retry++ {
+		resp, err = http.DefaultClient.Do(req)
+		if err != nil {
+			errs = multierror.Append(errs, fmt.Errorf("Err doing HTTP POST request on retry %d: %s", retry, err.Error()))
+		}
+	}
+	// If none of the retries succeeded, we return now
+	if resp == nil {
+		return 0, errs
 	}
 
 	var res map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&res)
 	if res["message"] != "success" {
-		return marshalledRecords, multierror.Append(errs, fmt.Errorf("got err response from firetail api: %v, req body:\n'%s'\n", res, string(reqBytes)))
+		return marshalledRecords, multierror.Append(errs, fmt.Errorf("Got err response from firetail api: %v, req body:\n'%s'\n", res, string(reqBytes)))
 	}
 
 	return marshalledRecords, errs
