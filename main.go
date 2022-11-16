@@ -63,6 +63,7 @@ func main() {
 		}
 	} else {
 		bufferSize = 1000
+		debugLog("FIRETAIL_LOG_BUFFER_SIZE not set; defaulting to %d", bufferSize)
 	}
 
 	// Create a channel down which the logsApiAgent will send events from the log API as []bytes
