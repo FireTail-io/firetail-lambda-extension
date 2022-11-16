@@ -59,21 +59,13 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 
 	req.Header.Set("x-ft-api-key", apiKey)
 
-	// The current retry implementation here may be prone to double-reporting if the request is successfully sent
-	// to the Firetail API, but the execution is frozen when awaiting the response & a timeout occurs.
+	// The execution of this request may be frozen at any time - we need to break this down so we know if the request
+	// was successfully written - if it was, should we make a second request? It risks double reporting assuming the
+	// request received a success response... 🤔
 	// TODO: investigate above.
-	var resp *http.Response
-	for attempt := 0; attempt < 10; attempt++ {
-		resp, err = http.DefaultClient.Do(req)
-		if err != nil {
-			errs = multierror.Append(errs, fmt.Errorf("Err doing HTTP POST request on attempt %d: %s", attempt, err.Error()))
-			continue
-		}
-		break
-	}
-	// If none of the retries succeeded, we return now
-	if resp == nil {
-		return 0, errs
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return 0, multierror.Append(errs, fmt.Errorf("Failed to make log request, err: %s", err.Error()))
 	}
 
 	var res map[string]interface{}

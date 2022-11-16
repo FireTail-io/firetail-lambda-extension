@@ -107,40 +107,62 @@ func main() {
 	defer wg.Wait()
 	go func() {
 		defer wg.Done()
+		recordsBatch := []firetail.Record{}
 		for {
-			select {
-			case logBytes, open := <-logQueue:
-				if !open {
-					debugLog("Queue channel closed & empty, logQueue recevier routine exiting...")
-					return
-				}
+			// Receive from the queue until there's nothing currently left in it
+			logQueueClosed := false
+		ReceiveLoop:
+			for {
+				select {
+				case logBytes, open := <-logQueue:
+					if !open {
+						debugLog("Queue channel closed & empty")
+						logQueueClosed = true
+						break ReceiveLoop
+					}
 
-				var logMessages logsapi.LogMessages
-				err := json.Unmarshal([]byte(logBytes), &logMessages)
-				if err != nil {
-					debugLog("Err unmarshalling logBytes into logsapi.LogMessages, err: %s", err.Error())
-				}
+					var logMessages logsapi.LogMessages
+					err := json.Unmarshal([]byte(logBytes), &logMessages)
+					if err != nil {
+						debugLog("Err unmarshalling logBytes into logsapi.LogMessages, err: %s", err.Error())
+						continue
+					}
 
-				firetailRecords, errs := firetail.ExtractFiretailRecords(logMessages)
-				// Log any errs, but still continue as it's possible not all failed
-				if errs != nil {
-					debugLog("Errs extracting firetail records, errs: %s", errs.Error())
-				}
-				// If there's no firetail records, then all failed or there were none, so there's nothing more to do
-				if len(firetailRecords) == 0 {
-					debugLog("No firetail records extracted. Continuing...")
-					continue
-				}
+					newFiretailRecords, errs := firetail.ExtractFiretailRecords(logMessages)
+					// If there are errs, proceed as normal as it's possible not all failed to extract
+					if errs != nil {
+						debugLog("Errs extracting firetail records, errs: %s", errs.Error())
+					}
+					recordsBatch = append(recordsBatch, newFiretailRecords...)
+					debugLog("Extracted %d records from logBytes; batch is now of size %d", len(newFiretailRecords), len(recordsBatch))
+					break
 
-				debugLog("Sending %d record(s) to Firetail...", len(firetailRecords))
-				recordsSent, err := firetail.SendRecordsToSaaS(firetailRecords, firetailApiUrl, firetailApiToken)
+				default:
+					// Give the other routines some to do their thang
+					time.Sleep(time.Nanosecond)
+					break ReceiveLoop
+				}
+			}
+
+			// If the batch isn't empty, we can attempt to send it
+			if len(recordsBatch) > 0 {
+				// Debug log before & after the request, as it takes some time & it's helpful to know if execution was frozen at this time
+				debugLog("Sending %d record(s) to Firetail...", len(recordsBatch))
+				recordsSent, err := firetail.SendRecordsToSaaS(recordsBatch, firetailApiUrl, firetailApiToken)
 				debugLog("Sent %d record(s) to Firetail.", recordsSent)
 				if err != nil {
 					debugLog("Err sending record(s) to Firetail SaaS, err: %s", err.Error())
+					continue
 				}
+				// If sending the batch to Firetail was a success, we can clear out the batch!
+				debugLog("Clearing records batch...")
+				recordsBatch = []firetail.Record{}
+			}
 
-			default:
-				time.Sleep(time.Nanosecond)
+			// If the logQueue is closed and the recordsBatch is now empty, then we can return
+			if logQueueClosed && len(recordsBatch) == 0 {
+				debugLog("logQueue closed & batch empty, logQueue receiver routine returning...")
+				return
 			}
 		}
 	}()
