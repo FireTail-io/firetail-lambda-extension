@@ -123,13 +123,6 @@ func main() {
 					debugLog("Err sending record(s) to Firetail SaaS, err: %s", err.Error())
 				}
 
-				// Check if logMessages contains a message of type logsapi.RuntimeDone - if it does, this routine needs to exit.
-				for _, logMessage := range logMessages {
-					if logMessage.Type == string(logsapi.RuntimeDone) {
-						debugLog("Found log message of type logsapi.RuntimeDone, logQueue receiver routine exiting...")
-						return
-					}
-				}
 			default:
 				time.Sleep(time.Nanosecond)
 			}
