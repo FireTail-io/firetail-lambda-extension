@@ -16,6 +16,7 @@ import (
 	"os/signal"
 	"path"
 	"strconv"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -149,7 +150,9 @@ func main() {
 
 			// Exit if we receive a SHUTDOWN event
 			if res.EventType == extension.Shutdown {
-				debugLog("Received extension shutdown event, exiting...")
+				debugLog("Received extension shutdown event, sleeping for 500ms to allow final logs to arrive...")
+				time.Sleep(500)
+				debugLog("Exiting...")
 				logsApiAgent.Shutdown()
 				close(logQueue)
 				return
