@@ -87,7 +87,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	// Start a receiver routine for logQueue that'll run until logQueue is closed or a logsapi.RuntimeDone event is received
+	// Start a receiver routine for logQueue that'll run until logQueue is closed
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	defer wg.Wait()
@@ -101,26 +101,23 @@ func main() {
 					return
 				}
 
-				// Unmarshal the bytes into a LogMessages
 				var logMessages logsapi.LogMessages
 				err := json.Unmarshal([]byte(logBytes), &logMessages)
 				if err != nil {
 					debugLog("Err unmarshalling logBytes into logsapi.LogMessages, err: %s", err.Error())
 				}
 
-				// Extract any firetail records from the log messages
 				firetailRecords, errs := firetail.ExtractFiretailRecords(logMessages)
 				// Log any errs, but still continue as it's possible not all failed
 				if errs != nil {
 					debugLog("Errs extracting firetail records, errs: %s", errs.Error())
 				}
-				// If there's no firetail records, then all failed or there were none, so there's nothing to do
+				// If there's no firetail records, then all failed or there were none, so there's nothing more to do
 				if len(firetailRecords) == 0 {
 					debugLog("No firetail records extracted. Continuing...")
 					continue
 				}
 
-				// Send the Firetail records to Firetail SaaS
 				debugLog("Sending %d record(s) to Firetail...", len(firetailRecords))
 				recordsSent, err := firetail.SendRecordsToSaaS(firetailRecords, firetailApiUrl, firetailApiToken)
 				debugLog("Sent %d record(s) to Firetail.", recordsSent)
@@ -134,7 +131,7 @@ func main() {
 		}
 	}()
 
-	// This for loop will block until invoke or shutdown event is received or cancelled via the context
+	// This for loop will block until an invoke or shutdown event is received, or the context is cancelled
 	for {
 		select {
 		case <-ctx.Done():
