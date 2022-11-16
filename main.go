@@ -87,12 +87,16 @@ func main() {
 	}
 
 	// Start a receiver routine for logQueue that'll run until logQueue is closed or a logsapi.RuntimeDone event is received
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	defer wg.Wait()
 	go func() {
 		for {
 			select {
 			case logBytes, open := <-logQueue:
 				if !open {
-					debugLog("Queue channel closed, logQueue recevier routine exiting...")
+					debugLog("Queue channel closed & empty, logQueue recevier routine exiting...")
+					wg.Done()
 					return
 				}
 
