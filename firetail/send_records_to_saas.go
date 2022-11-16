@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/hashicorp/go-multierror"
 )
@@ -20,14 +19,14 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 
 	var errs error
 	for _, record := range records {
-		logEntryRequest, err := record.getLogEntryRequest()
+		logEntryRequest, requestTime, err := record.getLogEntryRequest()
 		if err != nil {
 			errs = multierror.Append(errs, fmt.Errorf("Err creating log entry request value, err: %s", err.Error()))
 			continue
 		}
 
 		logEntryBytes, err := json.Marshal(LogEntry{
-			DateCreated:   time.Now().UnixMilli(),
+			DateCreated:   requestTime,
 			ExecutionTime: record.ExecutionTime,
 			Request:       *logEntryRequest,
 			Response: LogEntryResponse{
