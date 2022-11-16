@@ -70,7 +70,20 @@ func main() {
 	}
 
 	// Create a channel down which the logsApiAgent will send events from the log API as []bytes
-	logQueue := make(chan []byte)
+	logQueue := make(chan []byte, 100)
+
+	// Create a Logs API agent
+	logsApiAgent, err := agent.NewHttpAgent(logQueue)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	// Subscribe to the logs API. Logs start being delivered only after the subscription happens.
+	agentID := extensionClient.ExtensionID
+	err = logsApiAgent.Init(agentID)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	// Start a receiver routine for logQueue that'll run until logQueue is closed or a logsapi.RuntimeDone event is received
 	go func() {
@@ -121,19 +134,6 @@ func main() {
 			}
 		}
 	}()
-
-	// Create a Logs API agent
-	logsApiAgent, err := agent.NewHttpAgent(logQueue)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	// Subscribe to the logs API. Logs start being delivered only after the subscription happens.
-	agentID := extensionClient.ExtensionID
-	err = logsApiAgent.Init(agentID)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
 
 	// This for loop will block until invoke or shutdown event is received or cancelled via the context
 	for {
