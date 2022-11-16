@@ -51,8 +51,9 @@ func main() {
 		debugLog("FIRETAIL_API_URL not set, defaulting to %s", firetailApiUrl)
 	}
 
-	// Create a context with which we'll perform all our actions & make a channel to receive
-	// SIGTERM and SIGINT events & spawn a goroutine to call cancel() when we get one
+	// Create a context with which we'll perform all our requests to the extensions API
+	// & make a channel to receive SIGTERM and SIGINT events & spawn a goroutine to call
+	// cancel() when we get one
 	ctx, cancel := context.WithCancel(context.Background())
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
