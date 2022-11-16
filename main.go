@@ -92,12 +92,12 @@ func main() {
 	wg.Add(1)
 	defer wg.Wait()
 	go func() {
+		defer wg.Done()
 		for {
 			select {
 			case logBytes, open := <-logQueue:
 				if !open {
 					debugLog("Queue channel closed & empty, logQueue recevier routine exiting...")
-					wg.Done()
 					return
 				}
 
