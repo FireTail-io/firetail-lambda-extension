@@ -41,7 +41,7 @@ func main() {
 		debugLog("Firetail extension starting in debug mode")
 	}
 
-	// Get API url & API token from env vars
+	// Get API url, API token & buffer size from env vars
 	firetailApiToken := os.Getenv("FIRETAIL_API_TOKEN")
 	if firetailApiToken == "" {
 		log.Fatal("FIRETAIL_API_TOKEN not set")
@@ -51,6 +51,22 @@ func main() {
 		firetailApiUrl = "https://api.logging.eu-west-1.sandbox.firetail.app/logs/bulk"
 		debugLog("FIRETAIL_API_URL not set, defaulting to %s", firetailApiUrl)
 	}
+	var bufferSize int
+	bufferSizeStr := os.Getenv("FIRETAIL_LOG_BUFFER_SIZE")
+	if bufferSizeStr != "" {
+		bufferSize, err := strconv.Atoi(bufferSizeStr)
+		if err != nil {
+			log.Fatalf("FIRETAIL_LOG_BUFFER_SIZE value invalid, err: %s", err.Error())
+		}
+		if bufferSize < 1 {
+			log.Fatalf("FIRETAIL_LOG_BUFFER_SIZE is %d but must be >= 0", bufferSize)
+		}
+	} else {
+		bufferSize = 1000
+	}
+
+	// Create a channel down which the logsApiAgent will send events from the log API as []bytes
+	logQueue := make(chan []byte, bufferSize)
 
 	// Create a context with which we'll perform all our requests to the extensions API
 	// & make a channel to receive SIGTERM and SIGINT events & spawn a goroutine to call
@@ -70,9 +86,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	// Create a channel down which the logsApiAgent will send events from the log API as []bytes
-	logQueue := make(chan []byte, 100)
 
 	// Create a Logs API agent
 	logsApiAgent, err := agent.NewHttpAgent(logQueue)
