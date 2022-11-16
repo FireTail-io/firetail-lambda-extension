@@ -134,7 +134,7 @@ func main() {
 						debugLog("Errs extracting firetail records, errs: %s", errs.Error())
 					}
 					recordsBatch = append(recordsBatch, newFiretailRecords...)
-					debugLog("Extracted %d records from logBytes; batch is now of size %d", len(newFiretailRecords), len(recordsBatch))
+					debugLog("Extracted %d record(s) from logBytes; batch is now of size %d", len(newFiretailRecords), len(recordsBatch))
 					break
 
 				default:
