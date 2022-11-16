@@ -63,11 +63,13 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 	// to the Firetail API, but the execution is frozen when awaiting the response & a timeout occurs.
 	// TODO: investigate above.
 	var resp *http.Response
-	for retry := 0; retry < 10; retry++ {
+	for attempt := 0; attempt < 10; attempt++ {
 		resp, err = http.DefaultClient.Do(req)
 		if err != nil {
-			errs = multierror.Append(errs, fmt.Errorf("Err doing HTTP POST request on retry %d: %s", retry, err.Error()))
+			errs = multierror.Append(errs, fmt.Errorf("Err doing HTTP POST request on attempt %d: %s", attempt, err.Error()))
+			continue
 		}
+		break
 	}
 	// If none of the retries succeeded, we return now
 	if resp == nil {
