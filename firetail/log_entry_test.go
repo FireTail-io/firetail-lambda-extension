@@ -15,7 +15,7 @@ func TestEncodeAndDecodeLogEntry(t *testing.T) {
 		Request: LogEntryRequest{
 			Body: "{\"Description\":\"This is a test request body\"}",
 			Headers: map[string][]string{
-				"Test-Request-Header": []string{"Test-Value-1", "Test-Value-2"},
+				"Test-Request-Header": {"Test-Value-1", "Test-Value-2"},
 			},
 			HTTPProtocol: HTTP2,
 			IP:           "8.8.8.8",
@@ -26,7 +26,7 @@ func TestEncodeAndDecodeLogEntry(t *testing.T) {
 		Response: LogEntryResponse{
 			Body: "{\"Description\":\"This is a test response body\"}",
 			Headers: map[string][]string{
-				"Test-Response-Header": []string{"Test-Value-1", "Test-Value-2"},
+				"Test-Response-Header": {"Test-Value-1", "Test-Value-2"},
 			},
 			StatusCode: 200,
 		},
