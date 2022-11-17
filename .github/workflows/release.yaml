@@ -56,7 +56,6 @@ jobs:
       - name: Set RELEASE_VERSION
         run: |
           echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-          echo "AWS_RELEASE_VERSION=$(echo ${GITHUB_REF#refs/*/} | tr '.' '-')" >> $GITHUB_ENV
 
       - name: Download amd64 package artifact
         uses: actions/download-artifact@v3
@@ -72,10 +71,10 @@ jobs:
 
       - name: Publish amd64 layer to AWS
         run: |
-          AWS_LAYER_VERSION=$(make publish ARCH=amd64 VERSION=$RELEASE_VERSION AWS_VERSION=$AWS_RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }})
-          make public ARCH=amd64 AWS_LAYER_VERSION=$AWS_LAYER_VERSION AWS_VERSION=$AWS_RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }}
+          AWS_LAYER_VERSION=$(make publish ARCH=amd64 VERSION=$RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }})
+          make public ARCH=amd64 AWS_LAYER_VERSION=$AWS_LAYER_VERSION VERSION=$RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }}
 
       - name: Publish arm64 layer to AWS
         run: |
-          AWS_LAYER_VERSION=$(make publish ARCH=arm64 VERSION=$RELEASE_VERSION AWS_VERSION=$AWS_RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }})
-          make public ARCH=arm64 AWS_LAYER_VERSION=$AWS_LAYER_VERSION AWS_VERSION=$AWS_RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }}
+          AWS_LAYER_VERSION=$(make publish ARCH=arm64 VERSION=$RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }})
+          make public ARCH=arm64 AWS_LAYER_VERSION=$AWS_LAYER_VERSION VERSION=$RELEASE_VERSION AWS_REGION=${{ matrix.aws-region }}
