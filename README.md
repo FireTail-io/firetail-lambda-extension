@@ -113,8 +113,7 @@ COPY --from=firetail-layer-copy /opt /opt
 COPY my_lambda.py /var/task/
 CMD [ "my_lambda.handler" ]
 ```
-##### Replace \<ARCH\> with either x86_64 or arm64
-##### find the latest version tag in [Github Releases](https://github.com/FireTail-io/firetail-lambda-extension/releases) replace \<VERSION\> examples ``v0-0-4``
+##### find the latest version tag in [Github Releases](https://github.com/FireTail-io/firetail-lambda-extension/releases) and replace . with - \<VERSION\> examples ``v0-0-4``
 
 Example layer arn ``arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-x86_64-v0-0-4:1``
 
@@ -125,7 +124,8 @@ To run the AWS CLI within the Dockerfile, specify your AWS_ACCESS_KEY, and AWS_S
 docker build . -t layer-image1:latest \
 --build-arg AWS_DEFAULT_REGION=us-east-1 \
 --build-arg AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE \
---build-arg AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+--build-arg AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
+--build-arg AWS_LAYER_ARN=arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-x86_64-v0-0-4:1
 ```
 
 ### Terraform Example
