@@ -84,7 +84,7 @@ The target in the provided makefile that corresponds to this step is `package`, 
 make package ARCH=arm64 VERSION=v1.0.0
 ```
 
-This will yield a `.zip` file in the `build` directory named `firetail-extension-${ARCH}-${VERSION}.zip`.
+This will yield a `.zip` file in the `build` directory named `firetail-extension-${ARCH}-${VERSION}.zip`, which contains the `extensions` directory and the binary within it such that when it is extracted into `/opt`, the extension binary will be found in the `/opt/extensions/` directory as per the AWS documentation.
 
 
 
