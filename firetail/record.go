@@ -51,14 +51,6 @@ func (r *Record) getLogEntryRequest() (*LogEntryRequest, int64, error) {
 		if logEntryRequest.Headers == nil {
 			logEntryRequest.Headers = map[string][]string{}
 		}
-		for header, value := range apiGatewayV1Request.Headers {
-			_, hasValues := logEntryRequest.Headers[header]
-			if hasValues {
-				logEntryRequest.Headers[header] = append(logEntryRequest.Headers[header], value)
-			} else {
-				logEntryRequest.Headers[header] = []string{value}
-			}
-		}
 		return logEntryRequest, apiGatewayV1Request.RequestContext.RequestTimeEpoch, nil
 	}
 	err = multierror.Append(err, apiGatewayV1RequestErr)
