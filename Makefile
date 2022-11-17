@@ -8,7 +8,7 @@ AWS_amd64 := x86_64
 AWS_arm64 := arm64
 AWS_ARCH := $(AWS_$(ARCH))
 AWS_VERSION := $(subst .,-,${VERSION})
-AWS_LAYER_NAME := firetail-extension-${ARCH}-${AWS_VERSION}
+AWS_LAYER_NAME := firetail-extension-${AWS_ARCH}-${AWS_VERSION}
 
 .PHONY: test
 test:
