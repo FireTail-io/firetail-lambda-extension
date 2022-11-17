@@ -48,9 +48,9 @@ jobs:
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
           asset_path: build/firetail-extension-${{ matrix.arch }}-${{ env.RELEASE_VERSION }}.zip
-          asset_name: ${{ matrix.arch }}-binary
+          asset_name: firetail-extension-${{ matrix.arch }}-${{ env.RELEASE_VERSION }}
           asset_content_type: application/zip
-          
+
   publish-package:
     runs-on: ubuntu-latest
     needs: build-package
