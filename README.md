@@ -153,7 +153,7 @@ make add AWS_REGION=eu-west-1 LAYER_ARN=your-layer-arn FUNCTION_NAME=your-functi
 
 
 
-#### Using A Lambda Container Image Build Stage
+#### Adding the Firetail Extension to a AWS Lambda Docker build
 
 If your lambda is using a container image, you can add the layer to the image from within your Dockerfile. Relevant documentation can be found in [this AWS Compute Blog post](https://aws.amazon.com/blogs/compute/working-with-lambda-layers-and-extensions-in-container-images/). 
 
