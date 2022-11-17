@@ -38,7 +38,7 @@ go tool cover -html coverage.out
 
 ## Deployment
 
-The Firetail Logging Extension is an external Lambda extension, published as a Lambda Layer. Deploying it is a five step process:
+The Firetail Logging Extension is an external Lambda extension, published as a Lambda Layer. Deploying it is a five step process. If you wish to use the publicly accessible Lambda Layer published by Firetail, you can skip to the final step. The full list of steps to build, package, publish and use the Firetail Lambda Extension are as follows:
 
 - The first step is to [build the extension binary](#building-the-extension-binary).
 - The second step is to [package the extension binary](#packaging-the-extension-binary).
@@ -86,6 +86,8 @@ make package ARCH=arm64 VERSION=v1.0.0
 
 This will yield a `.zip` file in the `build` directory named `firetail-extension-${ARCH}-${VERSION}.zip`, which contains the `extensions` directory and the binary within it such that when it is extracted into `/opt`, the extension binary will be found in the `/opt/extensions/` directory as per the AWS documentation.
 
+
+
 ### Publishing The Package
 
 To publish the package, you may use the AWS CLI's [publish-layer-version](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/publish-layer-version.html) command. You will need to repeat this process for every region in which you wish to use the layer. You will also need to specify the compatible architectures, and give the layer a name. The output of the command will provide you with the layer's ARN and layer version, which you may use to add it to your Lambdas.
@@ -98,39 +100,92 @@ The target in the provided makefile that corresponds to this step is `publish`. 
 make publish ARCH=arm64 VERSION=v1.0.0 AWS_REGION=eu-west-1
 ```
 
-### Packaging Extension with Dockerfile
 
-```docker
+
+
+### Making The Layer Public
+
+ℹ️ In this step, we make the layer publically available for anyone to use. You may wish to omit this step. 
+
+To make the layer public, you may use the AWS CLI's [add-layer-version-permission](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/add-layer-version-permission.html) command. You will need to repeat this process for every layer you publish in every region. You will need to provide the layer name & layer version, a statement ID and region; and to make the layer public an action of `lambda:GetLayerVersion` and principal of `*`.
+
+The target in the provided makefile corresponding to this step is `public`. You must make the `publish` target before the `public` target. The `public` target requires a target architecture (`ARCH`), extension version (`VERSION`) and AWS region (`AWS_REGION`) which match that used when you made the `publish` target, as well as the layer version created when you made the `publish` target (`AWS_LAYER_VERSION`). For example, you may wish to do:
+
+```bash
+make public ARCH=arm64 VERSION=v1.0.0 AWS_REGION=eu-west-1 AWS_LAYER_VERSION=1
+```
+
+
+
+### Adding The Layer To A Lambda Function
+
+There are a number of ways to add the published layer to your Lambda Function:
+
+1. [Using the AWS CLI](#using-the-aws-cli).
+2. [Using a Lambda container image build stage](#using-a-lambda-container-image-build-stage).
+3. [Using Terraform](#using-terraform).
+
+You will need to ascertain the layer ARN of the Lambda Layer containing the Firetail Lambda Extension that you wish to use. If you are not publishing your own Firetail Extension Lambda Layer, you may use the Lambda Layer published publicly by Firetail. 
+
+The latest extension version of the publically accessible Lambda Layer published by Firetail can be derived by taking the latest version tag in the [Github Releases](https://github.com/FireTail-io/firetail-lambda-extension/releases) of this repository, and replacing the `.` characters with `-` characters. For example, `v1.2.3` would become `v1-2-3`. You will also need to determine the architecture you need for your Lambda Runtime, which may be either `arm64` or `x86_64`. Once you have these two values, you may substitute them into `${VERSION}` and `${ARCH}` respectively in  the following string:
+
+```bash
+arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-${ARCH}-${VERSION}:1
+```
+
+For example, for `ARCH=arm64` and `VERSION=v1-0-0` this should yield:
+
+```
+arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-arm64-v1-0-0:1
+```
+
+
+
+#### Using The AWS CLI
+
+To add the Lambda Layer to a Function, you may use the AWS CLI's [update-function-configuration](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/update-function-configuration.html) command. You will need to provide a region, the layer ARN and the name of the Function to which the layer is to be added.
+
+The target in the provided makefile corresponding to this step is `add`. The `add` target requires the layer ARN (`LAYER_ARN`), the name of the Function to add the layer to (`FUNCTION_NAME`), and the AWS region in which both the layer and the Function must be found (`AWS_REGION`). For example, you may wish to do:
+
+```bash
+make add AWS_REGION=eu-west-1 LAYER_ARN=your-layer-arn FUNCTION_NAME=your-function-name
+```
+
+
+
+#### Adding the Firetail Extension to a AWS Lambda Docker build
+
+If your lambda is using a container image, you can add the layer to the image from within your Dockerfile. Relevant documentation can be found in [this AWS Compute Blog post](https://aws.amazon.com/blogs/compute/working-with-lambda-layers-and-extensions-in-container-images/). 
+
+Find below a docker stage which you may add to your dockerfile to implement the process of downloading and unzipping the Lambda Layer package. This snippet adds as arguments the ARN of the layer to fetch, the region from which to fetch the layer, and the AWS access key & secret access key to use when fetching the layer:
+
+```dockerfile
 FROM alpine:latest as firetail-layer-copy
-ARG AWS_LAYER_ARN=${AWS_LAYER_ARN:-"arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-x86_64-v0-0-4:1"}
-ARG AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-"us-east-1"}
-ARG AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-""}
-ARG AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-""}
+
+ARG AWS_LAYER_ARN=${AWS_LAYER_ARN:-""}
 ENV AWS_LAYER_ARN=${AWS_LAYER_ARN}
+ARG AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-"us-east-1"}
 ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+ARG AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-""}
 ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ARG AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-""}
 ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+
 RUN apk add aws-cli curl unzip
 RUN mkdir -p /opt
 RUN curl $(aws lambda get-layer-version-by-arn --region ${AWS_DEFAULT_REGION} --arn ${AWS_LAYER_ARN} --query 'Content.Location' --output text) --output layer.zip
 RUN unzip layer.zip -d /opt
 RUN rm layer.zip
-FROM scratch
-
-# This is an example, you can replace the following lines with your original Dockerfile code
-FROM amazon/aws-lambda-python:3.8
-# The following line should be added to your original Dockerfile code
-COPY --from=firetail-layer-copy /opt /opt
-
-COPY my_lambda.py /var/task/
-CMD [ "my_lambda.handler" ]
 ```
-##### find the latest version tag in [Github Releases](https://github.com/FireTail-io/firetail-lambda-extension/releases) and replace . with - \<VERSION\> examples ``v0-0-4``
+You will then need to add the following step into the final stage in your Dockerfile to copy the extension from the `firetail-layer-copy` stage into the `/opt/extensions` directory in your final container image:
 
-Example layer arn ``arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-x86_64-v0-0-4:1``
+```dockerfile
+COPY --from=firetail-layer-copy /opt /opt
+```
 
+Once these steps are complete you should be able to run your build process as before, except with the addition of the `AWS_DEFAULT_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_LAYER_ARN` build arguments. 
 
-To run the AWS CLI within the Dockerfile, specify your AWS_ACCESS_KEY, and AWS_SECRET_ACCESS_KEY, and include the required AWS_DEFAULT_REGION as command-line arguments. Ensure you securely use, and store the minimal access credentials.
+⚠️ Ensure you securely use, and store these minimal access credentials ⚠️
 
 ```bash
 docker build . -t layer-image1:latest \
@@ -140,8 +195,11 @@ docker build . -t layer-image1:latest \
 --build-arg AWS_LAYER_ARN=arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-x86_64-v0-0-4:1
 ```
 
-### Terraform Example
-If you're using an infrastructure as code tool such as Terraform to manage your lambda functions, you can add this extension as a layer.
+
+
+#### Using Terraform
+
+Find below an example Terraform configuration that adds the Firetail extension to a Lambda Function as a layer:
 
 ```terraform
 resource "aws_lambda_function" "extensions-demo-example-lambda-python" {
@@ -164,32 +222,3 @@ resource "aws_lambda_function" "extensions-demo-example-lambda-python" {
         ]
 }
 ```
-
-
-
-
-
-### Making The Layer Public
-
-ℹ️ In this step, we make the layer publically available for anyone to use. You may wish to omit this step. 
-
-To make the layer public, you may use the AWS CLI's [add-layer-version-permission](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/add-layer-version-permission.html) command. You will need to repeat this process for every layer you publish in every region. You will need to provide the layer name & layer version, a statement ID and region; and to make the layer public an action of `lambda:GetLayerVersion` and principal of `*`.
-
-The target in the provided makefile corresponding to this step is `public`. You must make the `publish` target before the `public` target. The `public` target requires a target architecture (`ARCH`), extension version (`VERSION`) and AWS region (`AWS_REGION`) which match that used when you made the `publish` target, as well as the layer version created when you made the `publish` target (`AWS_LAYER_VERSION`). For example, you may wish to do:
-
-```bash
-make public ARCH=arm64 VERSION=v1.0.0 AWS_REGION=eu-west-1 AWS_LAYER_VERSION=1
-```
-
-
-
-### Adding The Layer To A Lambda Function
-
-To add the Lambda Layer to a Function, you may use the AWS CLI's [update-function-configuration](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/update-function-configuration.html) command. You will need to provide a region, the layer ARN and the name of the Function to which the Layer is to be added.
-
-The target in the provided makefile corresponding to this step is `add`. The `add` target requires the Layer ARN (`LAYER_ARN`), the name of the Function to add the Layer to (`FUNCTION_NAME`), and the AWS region in which both the Layer and the Function must be found (`AWS_REGION`). For example, you may wish to do:
-
-```bash
-make add AWS_REGION=eu-west-1 LAYER_ARN=your-layer-arn FUNCTION_NAME=your-function-name
-```
-
