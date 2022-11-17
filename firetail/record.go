@@ -2,6 +2,7 @@ package firetail
 
 import (
 	"encoding/json"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/hashicorp/go-multierror"
@@ -68,7 +69,7 @@ func (r *Record) getLogEntryRequest() (*LogEntryRequest, int64, error) {
 			Resource:     apiGatewayV2Request.RawPath,
 		}
 		for header, value := range apiGatewayV2Request.Headers {
-			logEntryRequest.Headers[header] = []string{value}
+			logEntryRequest.Headers[header] = strings.Split(value, ",")
 		}
 		return logEntryRequest, apiGatewayV2Request.RequestContext.TimeEpoch, nil
 	}
