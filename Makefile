@@ -1,11 +1,14 @@
+# Params with defaults
 ARCH := amd64
 VERSION := latest
-AWS_VERSION := $(subst .,-,${VERSION})
-AWS_LAYER_NAME := firetail-extension-${ARCH}-${AWS_VERSION}
 AWS_REGION := eu-west-1
+
+# Consts & derived values
 AWS_amd64 := x86_64
 AWS_arm64 := arm64
 AWS_ARCH := $(AWS_$(ARCH))
+AWS_VERSION := $(subst .,-,${VERSION})
+AWS_LAYER_NAME := firetail-extension-${ARCH}-${AWS_VERSION}
 
 .PHONY: test
 test:
