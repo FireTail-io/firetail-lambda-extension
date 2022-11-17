@@ -86,19 +86,21 @@ make package ARCH=arm64 VERSION=v1.0.0
 
 This will yield a `.zip` file in the `build` directory named `firetail-extension-${ARCH}-${VERSION}.zip`, which contains the `extensions` directory and the binary within it such that when it is extracted into `/opt`, the extension binary will be found in the `/opt/extensions/` directory as per the AWS documentation.
 
-### Deploying Extension with Dockerfile
+### Packaging Extension with Dockerfile
 
-```
+```docker
 FROM alpine:latest as firetail-layer-copy
+ARG AWS_LAYER_ARN=${AWS_LAYER_ARN:-"arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-x86_64-v0-0-4:1"}
 ARG AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-"us-east-1"}
 ARG AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-""}
 ARG AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-""}
+ENV AWS_LAYER_ARN=${AWS_LAYER_ARN}
 ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
 ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 RUN apk add aws-cli curl unzip
 RUN mkdir -p /opt
-RUN curl $(aws lambda get-layer-version-by-arn --region ${AWS_DEFAULT_REGION} --arn arn:aws:lambda:${AWS_DEFAULT_REGION}:453671210445:layer:firetail-extension-amd64-v0-0-4:1 --query 'Content.Location' --output text) --output layer.zip
+RUN curl $(aws lambda get-layer-version-by-arn --region ${AWS_DEFAULT_REGION} --arn ${AWS_LAYER_ARN} --query 'Content.Location' --output text) --output layer.zip
 RUN unzip layer.zip -d /opt
 RUN rm layer.zip
 FROM scratch
@@ -110,6 +112,45 @@ COPY --from=firetail-layer-copy /opt /opt
 
 COPY my_lambda.py /var/task/
 CMD [ "my_lambda.handler" ]
+```
+##### Replace \<ARCH\> with either x86_64 or arm64
+##### find the latest version tag in [Github Releases](https://github.com/FireTail-io/firetail-lambda-extension/releases) replace \<VERSION\> examples ``v0-0-4``
+
+Example layer arn ``arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-x86_64-v0-0-4:1``
+
+
+To run the AWS CLI within the Dockerfile, specify your AWS_ACCESS_KEY, and AWS_SECRET_ACCESS_KEY, and include the required AWS_DEFAULT_REGION as command-line arguments. Ensure you securely use, and store the minimal access credentials.
+
+```bash
+docker build . -t layer-image1:latest \
+--build-arg AWS_DEFAULT_REGION=us-east-1 \
+--build-arg AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE \
+--build-arg AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+```
+
+### Terraform Example
+If you're using an infrastructure as code tool such as Terraform to manage your lambda functions, you can add this extension as a layer.
+
+```terraform
+resource "aws_lambda_function" "extensions-demo-example-lambda-python" {
+        function_name = "LambdaFunctionUsingFireTailExtension"
+        s3_bucket     = "lambda-function-s3-bucket-name"
+        s3_key        = "lambda-functions-are-great.zip"
+        handler       = "handler.func"
+        runtime       = "python3.8"
+        role          = aws_iam_role.lambda_role.arn
+
+        environment {
+                variables = {
+                        FIRETAIL_API_TOKEN = "firetail-api-key",
+                        FIRETAIL_API_URL = "https://api.logging.eu-west-1.sandbox.firetail.app/logs/bulk"
+                }
+        }
+
+        layers = [
+            "arn:aws:lambda:<AWS_REGION>:453671210445:layer:firetail-extension-<ARCH>-<VERSION>:1"
+        ]
+}
 ```
 
 ### Publishing The Package
