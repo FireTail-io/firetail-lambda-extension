@@ -86,7 +86,31 @@ make package ARCH=arm64 VERSION=v1.0.0
 
 This will yield a `.zip` file in the `build` directory named `firetail-extension-${ARCH}-${VERSION}.zip`.
 
+### Deploying Extension with Dockerfile
 
+```
+FROM alpine:latest as firetail-layer-copy
+ARG AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-"us-east-1"}
+ARG AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-""}
+ARG AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-""}
+ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+RUN apk add aws-cli curl unzip
+RUN mkdir -p /opt
+RUN curl $(aws lambda get-layer-version-by-arn --region ${AWS_DEFAULT_REGION} --arn arn:aws:lambda:${AWS_DEFAULT_REGION}:453671210445:layer:firetail-extension-amd64-v0-0-4:1 --query 'Content.Location' --output text) --output layer.zip
+RUN unzip layer.zip -d /opt
+RUN rm layer.zip
+FROM scratch
+
+# This is an example, you can replace the following lines with your original Dockerfile code
+FROM amazon/aws-lambda-python:3.8
+# The following line should be added to your original Dockerfile code
+COPY --from=firetail-layer-copy /opt /opt
+
+COPY my_lambda.py /var/task/
+CMD [ "my_lambda.handler" ]
+```
 
 ### Publishing The Package
 
