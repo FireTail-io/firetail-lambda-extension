@@ -31,8 +31,9 @@ type RecordResponse struct {
 }
 
 // getLogEntryRequest returns the value for the request field of a Firetail SaaS LogEntry based upon the value of the firetail Record's Event value,
-// which is the event that invoked the lambda function. The current implementation supports APIGatewayProxyRequests and APIGatewayV2HTTPRequests.
-func (r *Record) getLogEntryRequest() (*LogEntryRequest, error) {
+// which is the event that invoked the lambda function, and the request time stated by that event value in UNIX milliseconds. The current implementation
+// supports APIGatewayProxyRequests and APIGatewayV2HTTPRequests.
+func (r *Record) getLogEntryRequest() (*LogEntryRequest, int64, error) {
 	var err error
 
 	var apiGatewayV1Request events.APIGatewayProxyRequest
@@ -58,7 +59,7 @@ func (r *Record) getLogEntryRequest() (*LogEntryRequest, error) {
 				logEntryRequest.Headers[header] = []string{value}
 			}
 		}
-		return logEntryRequest, nil
+		return logEntryRequest, apiGatewayV1Request.RequestContext.RequestTimeEpoch, nil
 	}
 	err = multierror.Append(err, apiGatewayV1RequestErr)
 
@@ -77,9 +78,9 @@ func (r *Record) getLogEntryRequest() (*LogEntryRequest, error) {
 		for header, value := range apiGatewayV2Request.Headers {
 			logEntryRequest.Headers[header] = []string{value}
 		}
-		return logEntryRequest, nil
+		return logEntryRequest, apiGatewayV2Request.RequestContext.TimeEpoch, nil
 	}
 	err = multierror.Append(err, apiGatewayV2RequestErr)
 
-	return nil, err
+	return nil, 0, err
 }

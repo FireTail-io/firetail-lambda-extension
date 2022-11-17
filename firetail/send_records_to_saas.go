@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/hashicorp/go-multierror"
 )
@@ -20,14 +19,14 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 
 	var errs error
 	for _, record := range records {
-		logEntryRequest, err := record.getLogEntryRequest()
+		logEntryRequest, requestTime, err := record.getLogEntryRequest()
 		if err != nil {
 			errs = multierror.Append(errs, fmt.Errorf("Err creating log entry request value, err: %s", err.Error()))
 			continue
 		}
 
 		logEntryBytes, err := json.Marshal(LogEntry{
-			DateCreated:   time.Now().UnixMilli(),
+			DateCreated:   requestTime,
 			ExecutionTime: record.ExecutionTime,
 			Request:       *logEntryRequest,
 			Response: LogEntryResponse{
@@ -59,16 +58,19 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 
 	req.Header.Set("x-ft-api-key", apiKey)
 
+	// The execution of this request may be frozen at any time - we need to break this down so we know if the request
+	// was successfully written - if it was, should we make a second request? It risks double reporting assuming the
+	// request received a success response... 🤔
+	// TODO: investigate above.
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		// The request has now been made, so we can now say that the marshalledRecords were included in the request sent to Firetail
-		return marshalledRecords, multierror.Append(errs, err)
+		return 0, multierror.Append(errs, fmt.Errorf("Failed to make log request, err: %s", err.Error()))
 	}
 
 	var res map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&res)
 	if res["message"] != "success" {
-		return marshalledRecords, multierror.Append(errs, fmt.Errorf("got err response from firetail api: %v, req body:\n'%s'\n", res, string(reqBytes)))
+		return marshalledRecords, multierror.Append(errs, fmt.Errorf("Got err response from firetail api: %v, req body:\n'%s'\n", res, string(reqBytes)))
 	}
 
 	return marshalledRecords, errs

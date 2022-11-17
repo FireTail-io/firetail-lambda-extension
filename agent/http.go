@@ -128,7 +128,7 @@ func (a HttpAgent) Init(agentID string) error {
 		return err
 	}
 
-	eventTypes := []logsapi.EventType{logsapi.Platform, logsapi.Function}
+	eventTypes := []logsapi.EventType{logsapi.Function}
 	bufferingCfg := logsapi.BufferingCfg{
 		MaxItems:  10000,
 		MaxBytes:  262144,
