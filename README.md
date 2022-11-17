@@ -38,7 +38,7 @@ go tool cover -html coverage.out
 
 ## Deployment
 
-The Firetail Logging Extension is an external Lambda extension, published as a Lambda Layer. Deploying it is a five step process:
+The Firetail Logging Extension is an external Lambda extension, published as a Lambda Layer. Deploying it is a five step process. If you wish to use the publicly accessible Lambda Layer published by Firetail, you can skip to the final step. The full list of steps to build, package, publish and use the Firetail Lambda Extension are as follows:
 
 - The first step is to [build the extension binary](#building-the-extension-binary).
 - The second step is to [package the extension binary](#packaging-the-extension-binary).
