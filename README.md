@@ -16,7 +16,7 @@ The extension receives these events and response payloads via a runtime-specific
 
 | Supported Runtimes   | Library                                                      |
 | -------------------- | ------------------------------------------------------------ |
-| Python 3.7, 3.8, 3.9 | [github.com/FireTail-iofiretail-py-lambda](https://github.com/FireTail-io/firetail-py-lambda) |
+| Python 3.7, 3.8, 3.9 | [github.com/FireTail-io/firetail-py-lambda](https://github.com/FireTail-io/firetail-py-lambda) |
 
 
 
