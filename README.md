@@ -125,7 +125,9 @@ There are a number of ways to add the published layer to your Lambda Function:
 2. [Using a Lambda container image build stage](#using-a-lambda-container-image-build-stage).
 3. [Using Terraform](#using-terraform).
 
-You will need to ascertain the layer ARN of the latest release of the Firetail Lambda Extension. This can be done by taking the latest version tag in the [Github Releases](https://github.com/FireTail-io/firetail-lambda-extension/releases) of this repository, and replacing the `.` characters with `-` characters. For example, `v1.2.3` would become `v1-2-3`. You will also need to determine the architecture you need for your Lambda Runtime, which may be either `arm64` or `x86_64`. Once you have these two values, you may substitute them into `${VERSION}` and `${ARCH}` respectively in  the following string:
+You will need to ascertain the layer ARN of the latest release of the Firetail Lambda Extension. 
+
+If you are not publishing your own Firetail Extension Lambda Layer, you may use the Lambda Layer published publicly by us. The latest version of this publically accessible Lambda Layer can be derived by taking the latest version tag in the [Github Releases](https://github.com/FireTail-io/firetail-lambda-extension/releases) of this repository, and replacing the `.` characters with `-` characters. For example, `v1.2.3` would become `v1-2-3`. You will also need to determine the architecture you need for your Lambda Runtime, which may be either `arm64` or `x86_64`. Once you have these two values, you may substitute them into `${VERSION}` and `${ARCH}` respectively in  the following string:
 
 ```bash
 arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-${ARCH}-${VERSION}:1
