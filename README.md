@@ -92,6 +92,8 @@ This will yield a `.zip` file in the `build` directory named `firetail-extension
 
 To publish the package, you may use the AWS CLI's [publish-layer-version](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/lambda/publish-layer-version.html) command. You will need to repeat this process for every region in which you wish to use the layer. You will also need to specify the compatible architectures, and give the layer a name. The output of the command will provide you with the layer's ARN and layer version, which you may use to add it to your Lambdas.
 
+If you reuse the same layer name multiple times, the layer version will be incremented. The approach taken in the provided makefile is to publish each extension version with a new layer name, so the layer version will almost always be `1`.
+
 The target in the provided makefile that corresponds to this step is `publish`. You must make the `build` target before the `publish` target. The `publish` target requires a target architecture (`ARCH`) and extension version (`VERSION`), which match that used when you made the `package` target; and a region in which to publish the layer (`AWS_REGION`). For example, you may wish to do:
 
 ```bash
