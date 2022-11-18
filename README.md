@@ -122,7 +122,7 @@ make public ARCH=arm64 VERSION=v1.0.0 AWS_REGION=eu-west-1 AWS_LAYER_VERSION=1
 There are a number of ways to add the published layer to your Lambda Function:
 
 1. [Using the AWS CLI](#using-the-aws-cli).
-2. [Using a Lambda container image build stage](#using-a-lambda-container-image-build-stage).
+2. [Using An AWS Lambda Docker Build](#using-an-aws-lambda-docker-build).
 3. [Using Terraform](#using-terraform).
 
 You will need to ascertain the layer ARN of the Lambda Layer containing the Firetail Lambda Extension that you wish to use. If you are not publishing your own Firetail Extension Lambda Layer, you may use the Lambda Layer published publicly by Firetail. 
@@ -153,7 +153,7 @@ make add AWS_REGION=eu-west-1 LAYER_ARN=your-layer-arn FUNCTION_NAME=your-functi
 
 
 
-#### Adding the Firetail Extension to a AWS Lambda Docker build
+#### Using An AWS Lambda Docker Build
 
 If your lambda is using a container image, you can add the layer to the image from within your Dockerfile. Relevant documentation can be found in [this AWS Compute Blog post](https://aws.amazon.com/blogs/compute/working-with-lambda-layers-and-extensions-in-container-images/). 
 
@@ -192,7 +192,7 @@ docker build . -t layer-image1:latest \
 --build-arg AWS_DEFAULT_REGION=us-east-1 \
 --build-arg AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE \
 --build-arg AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
---build-arg AWS_LAYER_ARN=arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-x86_64-v0-0-4:1
+--build-arg AWS_LAYER_ARN=arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-x86_64-v1-0-0:1
 ```
 
 
