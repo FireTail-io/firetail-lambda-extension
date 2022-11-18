@@ -48,7 +48,7 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 
 	// If there's no request bytes, there's no point making a request to Firetail
 	if len(reqBytes) == 0 {
-		return 0, errs
+		return 0, multierror.Append(errs, fmt.Errorf("Failed to marshal any Firetail records to bytes"))
 	}
 
 	req, err := http.NewRequest("POST", apiUrl, bytes.NewBuffer(reqBytes))

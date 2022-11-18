@@ -39,7 +39,9 @@ func (r *Record) getLogEntryRequest() (*LogEntryRequest, int64, error) {
 
 	var apiGatewayV1Request events.APIGatewayProxyRequest
 	apiGatewayV1RequestErr := json.Unmarshal(r.Event, &apiGatewayV1Request)
-	if apiGatewayV1RequestErr == nil {
+	// If there was no err in unmarshalling into an events.APIGatewayProxyRequest, and the HTTPMethod was populated with a non-zero value, we will
+	// assume it's an events.APIGatewayProxyRequest.
+	if apiGatewayV1RequestErr == nil && apiGatewayV1Request.Resource != "" {
 		logEntryRequest := &LogEntryRequest{
 			Body:         apiGatewayV1Request.Body,
 			Headers:      apiGatewayV1Request.MultiValueHeaders,
