@@ -147,5 +147,6 @@ func TestNewClientSubscribeNoServer(t *testing.T) {
 	assert.Nil(t, client)
 	require.NotNil(t, err)
 
-	assert.Contains(t, err.Error(), "Err doing subscription request: Put \"http://127.0.0.1:0/2020-08-15/logs\": dial tcp 127.0.0.1:0: connect: can't assign requested address")
+	// This may vary depending upon the runtime
+	assert.Contains(t, err.Error(), "Err doing subscription request: Put \"http://127.0.0.1:0/2020-08-15/logs\"")
 }
