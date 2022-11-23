@@ -1,17 +1,24 @@
-package firetail
+package logsapiclient
 
 import (
 	"encoding/base64"
 	"encoding/json"
-	"firetail-lambda-extension/logsapi"
+	"firetail-lambda-extension/firetail"
 	"fmt"
 	"strings"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/pkg/errors"
 )
 
-func ExtractFiretailRecords(logMessages logsapi.LogMessages) ([]Record, error) {
-	firetailRecords := []Record{}
+func extractFiretailRecords(requestBody []byte) ([]firetail.Record, error) {
+	var logMessages []logMessage
+	err := json.Unmarshal(requestBody, &logMessages)
+	if err != nil {
+		return nil, errors.WithMessage(err, "Err unmarshalling Lambda Logs API request body into []LogMessage")
+	}
+
+	firetailRecords := []firetail.Record{}
 	var errs error
 
 	// For each event item, if they are a function event, and their record field is a string, then try to decode
@@ -41,7 +48,7 @@ func ExtractFiretailRecords(logMessages logsapi.LogMessages) ([]Record, error) {
 	return firetailRecords, errs
 }
 
-func decodeFiretailRecord(record string) (*Record, error) {
+func decodeFiretailRecord(record string) (*firetail.Record, error) {
 	recordParts := strings.Split(record, ":")
 
 	if len(recordParts) != 3 {
@@ -61,7 +68,7 @@ func decodeFiretailRecord(record string) (*Record, error) {
 		return nil, fmt.Errorf("failed to b64 decode firetail record, err: %s", err.Error())
 	}
 
-	firetailRecord, err := UnmarshalRecord([]byte(recordPayload))
+	firetailRecord, err := firetail.UnmarshalRecord([]byte(recordPayload))
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal firetail event: %s", err.Error())
 	}

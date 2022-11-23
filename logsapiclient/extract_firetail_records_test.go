@@ -1,10 +1,10 @@
-package firetail
+package logsapiclient
 
 import (
 	"encoding/base32"
 	"encoding/base64"
 	"encoding/json"
-	"firetail-lambda-extension/logsapi"
+	"firetail-lambda-extension/firetail"
 	"testing"
 	"time"
 
@@ -13,8 +13,8 @@ import (
 )
 
 func TestDecodeFiretailRecordResponse(t *testing.T) {
-	testRecord := Record{
-		Response: RecordResponse{
+	testRecord := firetail.Record{
+		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
 		},
@@ -41,8 +41,8 @@ func TestDecodeFiretailRecordWithMissingPart(t *testing.T) {
 }
 
 func TestDecodeFiretailRecordWithExtraPart(t *testing.T) {
-	testRecord := Record{
-		Response: RecordResponse{
+	testRecord := firetail.Record{
+		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
 		},
@@ -60,8 +60,8 @@ func TestDecodeFiretailRecordWithExtraPart(t *testing.T) {
 }
 
 func TestDecodeFiretailRecordWithInvalidPrefix(t *testing.T) {
-	testRecord := Record{
-		Response: RecordResponse{
+	testRecord := firetail.Record{
+		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
 		},
@@ -79,8 +79,8 @@ func TestDecodeFiretailRecordWithInvalidPrefix(t *testing.T) {
 }
 
 func TestDecodeFiretailRecordWithInvalidToken(t *testing.T) {
-	testRecord := Record{
-		Response: RecordResponse{
+	testRecord := firetail.Record{
+		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
 		},
@@ -98,8 +98,8 @@ func TestDecodeFiretailRecordWithInvalidToken(t *testing.T) {
 }
 
 func TestDecodeFiretailRecordWithInvalidPayloadEncoding(t *testing.T) {
-	testRecord := Record{
-		Response: RecordResponse{
+	testRecord := firetail.Record{
+		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
 		},
@@ -140,8 +140,8 @@ func TestDecodeFiretailRecordWithInvalidPayloadTypes(t *testing.T) {
 }
 
 func TestExtractSingleRecord(t *testing.T) {
-	testRecord := Record{
-		Response: RecordResponse{
+	testRecord := firetail.Record{
+		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
 		},
@@ -150,16 +150,18 @@ func TestExtractSingleRecord(t *testing.T) {
 	require.Nil(t, err)
 	encodedRecord := "firetail:log-ext:" + base64.StdEncoding.EncodeToString(testPayloadBytes)
 
-	testMessage := logsapi.LogMessage{
+	testMessages := []logMessage{{
 		Time:   time.Now().Format("2006-01-02T15:04:05.000Z"),
 		Type:   "function",
 		Record: json.RawMessage{},
-	}
+	}}
 	testRecordBytes, err := json.Marshal(encodedRecord)
 	require.Nil(t, err)
-	testMessage.Record = testRecordBytes
+	testMessages[0].Record = testRecordBytes
+	testMessageBytes, err := json.Marshal(testMessages)
+	require.Nil(t, err)
 
-	decodedRecords, err := ExtractFiretailRecords([]logsapi.LogMessage{testMessage})
+	decodedRecords, err := extractFiretailRecords(testMessageBytes)
 	require.Nil(t, err)
 
 	require.Len(t, decodedRecords, 1)
@@ -167,11 +169,13 @@ func TestExtractSingleRecord(t *testing.T) {
 }
 
 func TestExtractRecordOfInvalidType(t *testing.T) {
-	testMessage := logsapi.LogMessage{
+	testMessages := []logMessage{{
 		Type: "platform.start",
-	}
+	}}
+	testMessageBytes, err := json.Marshal(testMessages)
+	require.Nil(t, err)
 
-	decodedRecords, err := ExtractFiretailRecords([]logsapi.LogMessage{testMessage})
+	decodedRecords, err := extractFiretailRecords(testMessageBytes)
 	require.NotNil(t, err)
 
 	assert.Len(t, decodedRecords, 0)
@@ -180,19 +184,30 @@ func TestExtractRecordOfInvalidType(t *testing.T) {
 
 func TestExtractRecordWithInvalidType(t *testing.T) {
 	invalidRecord := 3.14159
-	testMessage := logsapi.LogMessage{
+	testMessages := []logMessage{{
 		Time:   time.Now().Format("2006-01-02T15:04:05.000Z"),
 		Type:   "function",
 		Record: json.RawMessage{},
-	}
+	}}
 	testRecordBytes, err := json.Marshal(invalidRecord)
 	require.Nil(t, err)
-	testMessage.Record = testRecordBytes
+	testMessages[0].Record = testRecordBytes
+	testMessageBytes, err := json.Marshal(testMessages)
+	require.Nil(t, err)
 
-	decodedRecords, err := ExtractFiretailRecords([]logsapi.LogMessage{testMessage})
+	decodedRecords, err := extractFiretailRecords(testMessageBytes)
 	require.NotNil(t, err)
 
 	assert.Len(t, decodedRecords, 0)
 	assert.Contains(t, err.Error(), "Err unmarshalling event record as string, err: json: cannot unmarshal number into Go value of type string")
 	assert.Contains(t, err.Error(), "Err decoding event record as firetail event, err: record had 1 parts when split by ':'")
+}
+
+func TestExtractMessagesWithInvalidType(t *testing.T) {
+	testMessageBytes := []byte(`{"hello":"world"}`)
+
+	decodedRecords, err := extractFiretailRecords(testMessageBytes)
+	assert.Len(t, decodedRecords, 0)
+	require.NotNil(t, err)
+	assert.Equal(t, "Err unmarshalling Lambda Logs API request body into []LogMessage: json: cannot unmarshal object into Go value of type []logsapiclient.logMessage", err.Error())
 }
