@@ -1,4 +1,4 @@
-package logsapiclient
+package logsapi
 
 import (
 	"encoding/base32"
@@ -209,5 +209,5 @@ func TestExtractMessagesWithInvalidType(t *testing.T) {
 	decodedRecords, err := extractFiretailRecords(testMessageBytes)
 	assert.Len(t, decodedRecords, 0)
 	require.NotNil(t, err)
-	assert.Equal(t, "Err unmarshalling Lambda Logs API request body into []LogMessage: json: cannot unmarshal object into Go value of type []logsapiclient.logMessage", err.Error())
+	assert.Equal(t, "Err unmarshalling Lambda Logs API request body into []LogMessage: json: cannot unmarshal object into Go value of type []logsapi.logMessage", err.Error())
 }

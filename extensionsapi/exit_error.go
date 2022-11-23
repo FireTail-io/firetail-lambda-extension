@@ -1,4 +1,4 @@
-package extension
+package extensionsapi
 
 import (
 	"context"

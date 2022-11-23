@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"firetail-lambda-extension/extension"
+	"firetail-lambda-extension/extensionsapi"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -21,7 +21,7 @@ func getMockExtensionsApiServer() *httptest.Server {
 }
 
 func TestAwaitShutdownContextCancelled(t *testing.T) {
-	extensionClient := extension.NewClient("")
+	extensionClient := extensionsapi.NewClient("")
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	cancel()
@@ -33,7 +33,7 @@ func TestAwaitShutdownContextCancelled(t *testing.T) {
 }
 
 func TestAwaitShutdownNextEventErrs(t *testing.T) {
-	extensionClient := extension.NewClient("")
+	extensionClient := extensionsapi.NewClient("")
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
@@ -50,7 +50,7 @@ func TestAwaitShutdownShutdownEvent(t *testing.T) {
 	mockExtensionsApi := getMockExtensionsApiServer()
 	defer mockExtensionsApi.Close()
 
-	extensionClient := extension.NewClient(
+	extensionClient := extensionsapi.NewClient(
 		strings.Join(strings.Split(mockExtensionsApi.URL, ":")[1:], ":")[2:],
 	)
 

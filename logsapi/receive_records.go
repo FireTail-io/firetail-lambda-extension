@@ -1,4 +1,4 @@
-package logsapiclient
+package logsapi
 
 import (
 	"firetail-lambda-extension/firetail"

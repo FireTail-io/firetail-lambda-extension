@@ -4,7 +4,7 @@
 package main
 
 import (
-	"firetail-lambda-extension/extension"
+	"firetail-lambda-extension/extensionsapi"
 	"fmt"
 	"log"
 	"os"
@@ -28,7 +28,7 @@ func main() {
 	ctx := getContext()
 
 	// Create a Lambda Extensions API client & register our extension
-	extensionClient := extension.NewClient(os.Getenv("AWS_LAMBDA_RUNTIME_API"))
+	extensionClient := extensionsapi.NewClient(os.Getenv("AWS_LAMBDA_RUNTIME_API"))
 	_, err := extensionClient.Register(ctx, extensionName)
 	if err != nil {
 		panic(err)

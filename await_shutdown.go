@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"firetail-lambda-extension/extension"
+	"firetail-lambda-extension/extensionsapi"
 	"log"
 
 	"github.com/pkg/errors"
@@ -10,7 +10,7 @@ import (
 
 // awaitShutdown calls /event/next until a shutdown event is received, or the context is cancelled.
 // It returns a reason, or an error, depending upon the cause of the shutdown.
-func awaitShutdown(extensionClient *extension.Client, ctx context.Context) (string, error) {
+func awaitShutdown(extensionClient *extensionsapi.Client, ctx context.Context) (string, error) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -24,7 +24,7 @@ func awaitShutdown(extensionClient *extension.Client, ctx context.Context) (stri
 			}
 
 			// Exit if we receive a SHUTDOWN event
-			if res.EventType == extension.Shutdown {
+			if res.EventType == extensionsapi.Shutdown {
 				return "received shutdown event", nil
 			}
 		}

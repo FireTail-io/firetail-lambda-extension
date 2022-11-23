@@ -2,14 +2,14 @@ package main
 
 import (
 	"firetail-lambda-extension/firetail"
-	"firetail-lambda-extension/logsapiclient"
+	"firetail-lambda-extension/logsapi"
 	"log"
 	"sync"
 )
 
 // recordReceiver receives records from the logServer into batches & attempts to send them to Firetail until
 // logServer.ReceiveRecords returns that there are no records remaining.
-func recordReceiver(logServer *logsapiclient.Client, wg *sync.WaitGroup) {
+func recordReceiver(logServer *logsapi.Client, wg *sync.WaitGroup) {
 	firetailApiToken, firetailApiUrl := getFiretailApiConfig()
 
 	recordsBatch := []firetail.Record{}

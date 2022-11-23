@@ -1,4 +1,4 @@
-package logsapiclient
+package logsapi
 
 import (
 	"encoding/base64"
