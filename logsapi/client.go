@@ -12,7 +12,7 @@ type Client struct {
 	httpServer     *http.Server
 }
 
-func NewClient(options *Options) (*Client, error) {
+func NewClient(options Options) (*Client, error) {
 	options.setDefaults()
 
 	client := &Client{

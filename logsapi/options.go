@@ -2,6 +2,8 @@ package logsapi
 
 import "log"
 
+const DefaultRecordsBufferSize = 1000
+
 type Options struct {
 	ExtensionID         string           // The ID of the extension
 	RecordsBufferSize   int              // The size of the records channel buffer
@@ -17,5 +19,8 @@ var defaultErrCallback = func(err error) {
 func (o *Options) setDefaults() {
 	if o.ErrCallback == nil {
 		o.ErrCallback = &defaultErrCallback
+	}
+	if o.RecordsBufferSize == 0 {
+		o.RecordsBufferSize = DefaultRecordsBufferSize
 	}
 }

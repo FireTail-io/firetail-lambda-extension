@@ -28,9 +28,8 @@ func getFiretailApiConfig() (string, string) {
 func getLogBufferSize() (int, error) {
 	bufferSizeStr := os.Getenv("FIRETAIL_LOG_BUFFER_SIZE")
 	if bufferSizeStr == "" {
-		defaultBufferSize := 1000
-		log.Printf("FIRETAIL_LOG_BUFFER_SIZE not set; defaulting to %d", defaultBufferSize)
-		return defaultBufferSize, nil
+		log.Printf("FIRETAIL_LOG_BUFFER_SIZE not set")
+		return 0, nil
 	}
 
 	bufferSize, err := strconv.Atoi(bufferSizeStr)
@@ -41,4 +40,9 @@ func getLogBufferSize() (int, error) {
 		return 0, errors.Errorf("FIRETAIL_LOG_BUFFER_SIZE is %d but must be >= 0", bufferSize)
 	}
 	return bufferSize, nil
+}
+
+// Returns the URL of the Lambda Runtime API
+func getRuntimeApiUrl() string {
+	return os.Getenv("AWS_LAMBDA_RUNTIME_API")
 }

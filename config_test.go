@@ -62,7 +62,7 @@ func TestGetLogBufferSize(t *testing.T) {
 func TestGetLogBufferSizeDefault(t *testing.T) {
 	bufferSize, err := getLogBufferSize()
 	require.Nil(t, err)
-	assert.Equal(t, 1000, bufferSize)
+	assert.Equal(t, 0, bufferSize)
 }
 
 func TestGetLogBufferSizeNotInteger(t *testing.T) {
@@ -85,4 +85,11 @@ func TestGetLogBufferSizeLessThanZero(t *testing.T) {
 
 	assert.Equal(t, "FIRETAIL_LOG_BUFFER_SIZE is -512 but must be >= 0", err.Error())
 	assert.Equal(t, 0, bufferSize)
+}
+
+func TestGetRuntimeApiUrl(t *testing.T) {
+	testRuntimeApiUrl := "TEST_RUNTIME_API"
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", testRuntimeApiUrl)
+	runtimeApiUrl := getRuntimeApiUrl()
+	assert.Equal(t, testRuntimeApiUrl, runtimeApiUrl)
 }

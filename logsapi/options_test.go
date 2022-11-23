@@ -14,9 +14,10 @@ func TestSetDefaults(t *testing.T) {
 	testOptions := Options{}
 	testOptions.setDefaults()
 	assert.Equal(t, &defaultErrCallback, testOptions.ErrCallback)
+	assert.Equal(t, DefaultRecordsBufferSize, testOptions.RecordsBufferSize)
 }
 
-func TestDefaultErrCallba(t *testing.T) {
+func TestDefaultErrCallback(t *testing.T) {
 	testErr := errors.New("Test Error")
 
 	logBuffer := bytes.Buffer{}

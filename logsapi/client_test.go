@@ -41,7 +41,7 @@ func TestNewClient(t *testing.T) {
 	testServer := getLogsApiServer()
 	defer testServer.Close()
 
-	client, err := NewClient(&Options{
+	client, err := NewClient(Options{
 		ExtensionID:         "TEST_EXTENSION_ID",
 		RecordsBufferSize:   3142,
 		LogServerAddress:    "127.0.0.1:0",
@@ -109,7 +109,7 @@ func TestNewClientSubscribeBroken(t *testing.T) {
 	testServer := getBrokenLogsApiServer()
 	defer testServer.Close()
 
-	client, err := NewClient(&Options{
+	client, err := NewClient(Options{
 		ExtensionID:         "TEST_EXTENSION_ID",
 		RecordsBufferSize:   3142,
 		LogServerAddress:    "TEST_LOG_SERVER_ADDRESS",
@@ -125,7 +125,7 @@ func TestNewClientSubscribeLocal(t *testing.T) {
 	testServer := getLocalLogsApiServer()
 	defer testServer.Close()
 
-	client, err := NewClient(&Options{
+	client, err := NewClient(Options{
 		ExtensionID:         "TEST_EXTENSION_ID",
 		RecordsBufferSize:   3142,
 		LogServerAddress:    "TEST_LOG_SERVER_ADDRESS",
@@ -138,7 +138,7 @@ func TestNewClientSubscribeLocal(t *testing.T) {
 }
 
 func TestNewClientSubscribeNoServer(t *testing.T) {
-	client, err := NewClient(&Options{
+	client, err := NewClient(Options{
 		ExtensionID:         "TEST_EXTENSION_ID",
 		RecordsBufferSize:   3142,
 		LogServerAddress:    "TEST_LOG_SERVER_ADDRESS",

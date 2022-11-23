@@ -9,7 +9,7 @@ import (
 
 // recordReceiver receives records from the logServer into batches & attempts to send them to Firetail until
 // logServer.ReceiveRecords returns that there are no records remaining.
-func recordReceiver(logServer *logsapi.Client, wg *sync.WaitGroup) {
+func recordReceiver(logsApiClient *logsapi.Client, wg *sync.WaitGroup) {
 	firetailApiToken, firetailApiUrl := getFiretailApiConfig()
 
 	recordsBatch := []firetail.Record{}
@@ -17,7 +17,7 @@ func recordReceiver(logServer *logsapi.Client, wg *sync.WaitGroup) {
 
 	for {
 		// Spend no more than 1 second receiving records into the recordsBatch
-		newRecords, recordsRemaining := logServer.ReceiveRecords(maxBatchSize - len(recordsBatch))
+		newRecords, recordsRemaining := logsApiClient.ReceiveRecords(maxBatchSize - len(recordsBatch))
 		recordsBatch = append(recordsBatch, newRecords...)
 
 		// If the batch is empty, but there's records remaining, then we continue; else we return.
