@@ -48,7 +48,11 @@ func main() {
 	defer recordReceiverWaitgroup.Wait()
 
 	// awaitShutdown will block until a shutdown event is received, or the context is cancelled
-	awaitShutdown(extensionClient, ctx)
+	reason, err := awaitShutdown(extensionClient, ctx)
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Shutting down, reason:", reason)
 
 	// Sleep for 500ms to allow any final logs to be sent to the extension by the Lambda Logs API
 	log.Printf("Sleeping for 500ms to allow final logs to be processed...")
