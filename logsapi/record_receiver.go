@@ -8,10 +8,9 @@ import (
 // returns an err, it does not remove the log entries from the batch.
 func (c *Client) recordReceiver() {
 	recordsBatch := []firetail.Record{}
-	maxBatchSize := 100
 
 	for {
-		newRecords, recordsRemaining := c.receiveRecords(maxBatchSize - len(recordsBatch))
+		newRecords, recordsRemaining := c.receiveRecords(c.maxBatchSize - len(recordsBatch))
 		recordsBatch = append(recordsBatch, newRecords...)
 
 		// If the batch is empty, but there's records remaining, then we continue; else we return.

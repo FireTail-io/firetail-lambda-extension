@@ -12,6 +12,7 @@ type Client struct {
 	errCallback       func(error)
 	httpServer        *http.Server
 	receiverWaitgroup *sync.WaitGroup
+	maxBatchSize      int
 	batchCallback     func([]firetail.Record) error
 }
 
@@ -24,6 +25,7 @@ func NewClient(options Options) (*Client, error) {
 		errCallback:       options.ErrCallback,
 		httpServer:        &http.Server{Addr: options.LogServerAddress},
 		receiverWaitgroup: &sync.WaitGroup{},
+		maxBatchSize:      options.maxBatchSize,
 		batchCallback:     options.BatchCallback,
 	}
 
