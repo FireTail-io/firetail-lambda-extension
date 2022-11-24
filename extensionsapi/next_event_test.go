@@ -64,7 +64,7 @@ func TestNextEventNoServer(t *testing.T) {
 	res, err := client.NextEvent(ctx)
 	assert.Nil(t, res)
 	require.NotNil(t, err)
-	assert.Equal(t, "Get \"http://127.0.0.1:0/2020-01-01/extension/event/next\": dial tcp 127.0.0.1:0: connect: can't assign requested address", err.Error())
+	assert.Contains(t, err.Error(), "Get \"http://127.0.0.1:0/2020-01-01/extension/event/next\": dial tcp 127.0.0.1:0:")
 }
 
 func TestNextEventInternalServerError(t *testing.T) {

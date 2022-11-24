@@ -58,7 +58,7 @@ func TestExitErrorNoServer(t *testing.T) {
 	res, err := client.ExitError(ctx, testErrorType)
 	assert.Nil(t, res)
 	require.NotNil(t, err)
-	assert.Equal(t, "Post \"http://127.0.0.1:0/2020-01-01/extension/exit/error\": dial tcp 127.0.0.1:0: connect: can't assign requested address", err.Error())
+	assert.Contains(t, err.Error(), "Post \"http://127.0.0.1:0/2020-01-01/extension/exit/error\": dial tcp 127.0.0.1:0:")
 }
 
 func TestExitErrorInternalServerError(t *testing.T) {
