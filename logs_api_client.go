@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"firetail-lambda-extension/logsapi"
-	"log"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 func initLogsApiClient(options logsapi.Options, ctx context.Context) (*logsapi.Client, error) {
@@ -16,11 +17,11 @@ func initLogsApiClient(options logsapi.Options, ctx context.Context) (*logsapi.C
 	go func() {
 		err := logServer.ListenAndServe()
 		if err != http.ErrServerClosed {
-			log.Printf("Log server closed unexpectedly: %s", err.Error())
+			(*options.ErrCallback)(errors.WithMessage(err, "Log server closed unexpectedly"))
 			logServer.Shutdown(ctx)
 			return
 		}
-		log.Printf("Log server closed %s", err.Error())
+		(*options.ErrCallback)(err)
 	}()
 
 	return logServer, nil
