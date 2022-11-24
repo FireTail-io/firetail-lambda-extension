@@ -7,6 +7,7 @@ import (
 	"firetail-lambda-extension/extensionsapi"
 	"firetail-lambda-extension/logsapi"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -20,7 +21,7 @@ func main() {
 	log.SetPrefix(fmt.Sprintf("[%s] ", extensionName))
 	if isDebug, err := strconv.ParseBool(os.Getenv("FIRETAIL_EXTENSION_DEBUG")); err != nil || !isDebug {
 		// If we're not in debug mode, we'll just send the logs to the void
-		// log.SetOutput(nil)
+		log.SetOutput(ioutil.Discard)
 	}
 
 	// This context will be cancelled whenever a SIGTERM or SIGINT signal is received
