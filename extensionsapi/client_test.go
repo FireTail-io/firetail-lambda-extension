@@ -8,8 +8,8 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	runtimeApi := "127.0.0.1:0"
-	client := NewClient(runtimeApi)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:0")
+	client := NewClient()
 	assert.Equal(t, "http://127.0.0.1:0/2020-01-01/extension", client.extensionsApiUrl)
 	assert.Equal(t, http.Client{}, *client.httpClient)
 }

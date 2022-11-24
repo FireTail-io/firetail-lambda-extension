@@ -38,9 +38,8 @@ func TestNextEvent(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	client := NewClient(
-		strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client := NewClient()
 
 	ctx := context.Background()
 	res, err := client.NextEvent(ctx)
@@ -50,7 +49,8 @@ func TestNextEvent(t *testing.T) {
 }
 
 func TestNextEventBadUrl(t *testing.T) {
-	client := NewClient("\n")
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", "\n")
+	client := NewClient()
 	ctx := context.Background()
 	res, err := client.NextEvent(ctx)
 	assert.Nil(t, res)
@@ -59,7 +59,8 @@ func TestNextEventBadUrl(t *testing.T) {
 }
 
 func TestNextEventNoServer(t *testing.T) {
-	client := NewClient("127.0.0.1:0")
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:0")
+	client := NewClient()
 	ctx := context.Background()
 	res, err := client.NextEvent(ctx)
 	assert.Nil(t, res)
@@ -79,9 +80,8 @@ func TestNextEventInternalServerError(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	client := NewClient(
-		strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client := NewClient()
 
 	ctx := context.Background()
 	res, err := client.NextEvent(ctx)
@@ -102,9 +102,8 @@ func TestNextEventInvalidResponse(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	client := NewClient(
-		strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client := NewClient()
 
 	ctx := context.Background()
 	res, err := client.NextEvent(ctx)

@@ -21,7 +21,7 @@ func getMockExtensionsApiServer() *httptest.Server {
 }
 
 func TestAwaitShutdownContextCancelled(t *testing.T) {
-	extensionClient := extensionsapi.NewClient("")
+	extensionClient := extensionsapi.NewClient()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	cancel()
@@ -33,7 +33,7 @@ func TestAwaitShutdownContextCancelled(t *testing.T) {
 }
 
 func TestAwaitShutdownNextEventErrs(t *testing.T) {
-	extensionClient := extensionsapi.NewClient("")
+	extensionClient := extensionsapi.NewClient()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
@@ -50,9 +50,8 @@ func TestAwaitShutdownShutdownEvent(t *testing.T) {
 	mockExtensionsApi := getMockExtensionsApiServer()
 	defer mockExtensionsApi.Close()
 
-	extensionClient := extensionsapi.NewClient(
-		strings.Join(strings.Split(mockExtensionsApi.URL, ":")[1:], ":")[2:],
-	)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(mockExtensionsApi.URL, ":")[1:], ":")[2:])
+	extensionClient := extensionsapi.NewClient()
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()

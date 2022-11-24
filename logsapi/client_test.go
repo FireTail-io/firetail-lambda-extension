@@ -23,45 +23,37 @@ func getLogsApiServer() *httptest.Server {
 	}))
 }
 
-func getLocalLogsApiServer() *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusAccepted)
-		fmt.Fprintf(w, `{"message":"success"}`)
-	}))
-}
-
-func getBrokenLogsApiServer() *httptest.Server {
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, `{"message":"internal server error"}`)
-	}))
-}
-
 func TestNewClient(t *testing.T) {
 	testServer := getLogsApiServer()
 	defer testServer.Close()
 
+	batchesReceived := [][]firetail.Record{}
+	batchCallbackWaitgroup := &sync.WaitGroup{}
+	batchCallbackWaitgroup.Add(1)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
 	client, err := NewClient(Options{
-		ExtensionID:         "TEST_EXTENSION_ID",
-		RecordsBufferSize:   3142,
-		LogServerAddress:    "127.0.0.1:0",
-		AwsLambdaRuntimeAPI: strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
+		BatchCallback: func(batch []firetail.Record) error {
+			batchesReceived = append(batchesReceived, batch)
+			batchCallbackWaitgroup.Done()
+			return nil
+		},
 	})
 	require.Nil(t, err)
 	require.NotNil(t, client)
 	log.Println("Created client")
 
 	// ListenAndServe in separate routine & assert it closes correctly
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-	defer wg.Wait()
+	shutdownWaitgroup := sync.WaitGroup{}
+	shutdownWaitgroup.Add(1)
+	defer shutdownWaitgroup.Wait()
 	go func() {
 		log.Println("Listening and serving...")
 		err := client.ListenAndServe()
 		assert.Equal(t, "http: Server closed", err.Error())
-		wg.Done()
+		shutdownWaitgroup.Done()
 	}()
 
+	log.Println("foo")
 	// Mock a Lambda Logs API request
 	testRequest := httptest.NewRequest(
 		"POST",
@@ -80,41 +72,34 @@ func TestNewClient(t *testing.T) {
 	log.Println(result)
 	assert.Equal(t, 200, result.StatusCode)
 
-	// Test the logs API client decoded the payload & processed the response properly
-	records, recordsRemaining := client.ReceiveRecords(1)
-	assert.Equal(t, 1, len(records))
-	assert.True(t, recordsRemaining)
-	assert.Equal(t, 0.04863739013671875, records[0].ExecutionTime)
-	assert.Equal(t, int64(200), records[0].Response.StatusCode)
-	assert.Equal(t, "{\"message\": \"Hello, the current time is 10:20:39.660270\"}", records[0].Response.Body)
+	// Wait until the batch callback has received at least 1 batch
+	batchCallbackWaitgroup.Wait()
 
-	// Test the logs API client has no further records
-	records, recordsRemaining = client.ReceiveRecords(10)
-	assert.Equal(t, []firetail.Record{}, records)
-	assert.True(t, recordsRemaining)
+	// Test the logs API client provided the callback with exactly 1 batch containing exactly 1 record
+	require.Len(t, batchesReceived, 1)
+	require.Len(t, batchesReceived[0], 1)
+
+	// Test that the record was decoded properly
+	assert.Equal(t, 0.04863739013671875, batchesReceived[0][0].ExecutionTime)
+	assert.Equal(t, int64(200), batchesReceived[0][0].Response.StatusCode)
+	assert.Equal(t, "{\"message\": \"Hello, the current time is 10:20:39.660270\"}", batchesReceived[0][0].Response.Body)
 
 	// Test the client shuts down successfully
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	err = client.Shutdown(ctx)
 	assert.Nil(t, err)
-
-	// Test the logs API client properly closes the recordsChannel
-	records, recordsRemaining = client.ReceiveRecords(10)
-	assert.Equal(t, []firetail.Record{}, records)
-	assert.False(t, recordsRemaining)
 }
 
 func TestNewClientSubscribeBroken(t *testing.T) {
-	testServer := getBrokenLogsApiServer()
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, `{"message":"internal server error"}`)
+	}))
 	defer testServer.Close()
 
-	client, err := NewClient(Options{
-		ExtensionID:         "TEST_EXTENSION_ID",
-		RecordsBufferSize:   3142,
-		LogServerAddress:    "TEST_LOG_SERVER_ADDRESS",
-		AwsLambdaRuntimeAPI: strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	})
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client, err := NewClient(Options{})
 	assert.Nil(t, client)
 	require.NotNil(t, err)
 
@@ -122,15 +107,14 @@ func TestNewClientSubscribeBroken(t *testing.T) {
 }
 
 func TestNewClientSubscribeLocal(t *testing.T) {
-	testServer := getLocalLogsApiServer()
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+		fmt.Fprintf(w, `{"message":"success"}`)
+	}))
 	defer testServer.Close()
 
-	client, err := NewClient(Options{
-		ExtensionID:         "TEST_EXTENSION_ID",
-		RecordsBufferSize:   3142,
-		LogServerAddress:    "TEST_LOG_SERVER_ADDRESS",
-		AwsLambdaRuntimeAPI: strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	})
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client, err := NewClient(Options{})
 	assert.Nil(t, client)
 	require.NotNil(t, err)
 
@@ -138,12 +122,8 @@ func TestNewClientSubscribeLocal(t *testing.T) {
 }
 
 func TestNewClientSubscribeNoServer(t *testing.T) {
-	client, err := NewClient(Options{
-		ExtensionID:         "TEST_EXTENSION_ID",
-		RecordsBufferSize:   3142,
-		LogServerAddress:    "TEST_LOG_SERVER_ADDRESS",
-		AwsLambdaRuntimeAPI: "127.0.0.1:0",
-	})
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:0")
+	client, err := NewClient(Options{})
 	assert.Nil(t, client)
 	require.NotNil(t, err)
 

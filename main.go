@@ -11,7 +11,6 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -28,37 +27,21 @@ func main() {
 	// We'll use it for our requests to the extensions API & to shutdown the log server
 	ctx := getContext()
 
-	// Get the URL of the runtime API which we'll need to register our extension and subscribe to the logs API
-	runtimeApiUrl := os.Getenv("AWS_LAMBDA_RUNTIME_API")
-
 	// Create a Lambda Extensions API client & register our extension
-	extensionClient := extensionsapi.NewClient(runtimeApiUrl)
+	extensionClient := extensionsapi.NewClient()
 	_, err := extensionClient.Register(ctx, extensionName)
 	if err != nil {
 		panic(err)
 	}
 
-	// Now we know the extension ID, we can start the log server
-	recordsBufferSize, err := getLogBufferSize()
-	if err != nil {
-		panic(err)
-	}
 	logsApiClient, err := initLogsApiClient(logsapi.Options{
-		ExtensionID:         extensionClient.ExtensionID,
-		RecordsBufferSize:   recordsBufferSize,
-		LogServerAddress:    "sandbox:1234",
-		AwsLambdaRuntimeAPI: runtimeApiUrl,
+		ExtensionID:      extensionClient.ExtensionID,
+		LogServerAddress: "sandbox:1234",
 	}, ctx)
 	if err != nil {
 		panic(err)
 	}
 	defer logsApiClient.Shutdown(ctx)
-
-	// Create a goroutine to receive records from the log server and attempt to send them to Firetail
-	recordReceiverWaitgroup := sync.WaitGroup{}
-	recordReceiverWaitgroup.Add(1)
-	go recordReceiver(logsApiClient, &recordReceiverWaitgroup)
-	defer recordReceiverWaitgroup.Wait()
 
 	// awaitShutdown will block until a shutdown event is received, or the context is cancelled
 	reason, err := awaitShutdown(extensionClient, ctx)

@@ -17,11 +17,11 @@ func initLogsApiClient(options logsapi.Options, ctx context.Context) (*logsapi.C
 	go func() {
 		err := logServer.ListenAndServe()
 		if err != http.ErrServerClosed {
-			(*options.ErrCallback)(errors.WithMessage(err, "Log server closed unexpectedly"))
+			options.ErrCallback(errors.WithMessage(err, "Log server closed unexpectedly"))
 			logServer.Shutdown(ctx)
 			return
 		}
-		(*options.ErrCallback)(err)
+		options.ErrCallback(err)
 	}()
 
 	return logServer, nil

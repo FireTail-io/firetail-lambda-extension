@@ -34,9 +34,8 @@ func TestRegister(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	client := NewClient(
-		strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client := NewClient()
 
 	ctx := context.Background()
 	res, err := client.Register(ctx, testExtensionName)
@@ -48,7 +47,8 @@ func TestRegister(t *testing.T) {
 }
 
 func TestRegisterBadUrl(t *testing.T) {
-	client := NewClient("\n")
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", "\n")
+	client := NewClient()
 	ctx := context.Background()
 	res, err := client.Register(ctx, "TEST_EXTENSION_NAME")
 	assert.Nil(t, res)
@@ -57,7 +57,8 @@ func TestRegisterBadUrl(t *testing.T) {
 }
 
 func TestRegisterNoServer(t *testing.T) {
-	client := NewClient("127.0.0.1:0")
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:0")
+	client := NewClient()
 	ctx := context.Background()
 	res, err := client.Register(ctx, "TEST_EXTENSION_NAME")
 	assert.Nil(t, res)
@@ -77,9 +78,8 @@ func TestRegisterInternalServerError(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	client := NewClient(
-		strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client := NewClient()
 
 	ctx := context.Background()
 	res, err := client.Register(ctx, "TEST_EXTENSION_NAME")
@@ -100,9 +100,8 @@ func TestRegisterInvalidResponse(t *testing.T) {
 	}))
 	defer testServer.Close()
 
-	client := NewClient(
-		strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client := NewClient()
 
 	ctx := context.Background()
 	res, err := client.Register(ctx, "TEST_EXTENSION_NAME")

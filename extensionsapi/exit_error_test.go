@@ -26,9 +26,8 @@ func TestExitError(t *testing.T) {
 	ctx := context.Background()
 	testErrorType := "TEST_ERROR_TYPE"
 
-	client := NewClient(
-		strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client := NewClient()
 
 	res, err := client.ExitError(ctx, testErrorType)
 	require.NotNil(t, res)
@@ -41,7 +40,8 @@ func TestExitErrorBadUrl(t *testing.T) {
 	ctx := context.Background()
 	testErrorType := "TEST_ERROR_TYPE"
 
-	client := NewClient("\n")
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", "\n")
+	client := NewClient()
 
 	res, err := client.ExitError(ctx, testErrorType)
 	assert.Nil(t, res)
@@ -53,7 +53,8 @@ func TestExitErrorNoServer(t *testing.T) {
 	ctx := context.Background()
 	testErrorType := "TEST_ERROR_TYPE"
 
-	client := NewClient("127.0.0.1:0")
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:0")
+	client := NewClient()
 
 	res, err := client.ExitError(ctx, testErrorType)
 	assert.Nil(t, res)
@@ -76,9 +77,8 @@ func TestExitErrorInternalServerError(t *testing.T) {
 	ctx := context.Background()
 	testErrorType := "TEST_ERROR_TYPE"
 
-	client := NewClient(
-		strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client := NewClient()
 
 	res, err := client.ExitError(ctx, testErrorType)
 	assert.Nil(t, res)
@@ -101,9 +101,8 @@ func TestExitErrorInvalidResponse(t *testing.T) {
 	ctx := context.Background()
 	testErrorType := "TEST_ERROR_TYPE"
 
-	client := NewClient(
-		strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:],
-	)
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(testServer.URL, ":")[1:], ":")[2:])
+	client := NewClient()
 
 	res, err := client.ExitError(ctx, testErrorType)
 	assert.Nil(t, res)

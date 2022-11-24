@@ -31,17 +31,15 @@ func TestInitLogsApiClient(t *testing.T) {
 	var closeErr error
 	errWaitgroup := sync.WaitGroup{}
 	errWaitgroup.Add(1)
-	errCallback := func(err error) {
-		closeErr = err
-		errWaitgroup.Done()
-	}
-
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(runtimeApiServer.URL, ":")[1:], ":")[2:])
 	logsApiClient, err := initLogsApiClient(
 		logsapi.Options{
-			ExtensionID:         extensionID,
-			LogServerAddress:    "127.0.0.1:0",
-			AwsLambdaRuntimeAPI: strings.Join(strings.Split(runtimeApiServer.URL, ":")[1:], ":")[2:],
-			ErrCallback:         &errCallback,
+			ExtensionID:      extensionID,
+			LogServerAddress: "127.0.0.1:0",
+			ErrCallback: func(err error) {
+				closeErr = err
+				errWaitgroup.Done()
+			},
 		},
 		ctx,
 	)
@@ -65,17 +63,15 @@ func TestInitLogsApiClientWithInvalidAddress(t *testing.T) {
 	var closeErr error
 	errWaitgroup := sync.WaitGroup{}
 	errWaitgroup.Add(1)
-	errCallback := func(err error) {
-		closeErr = err
-		errWaitgroup.Done()
-	}
-
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(runtimeApiServer.URL, ":")[1:], ":")[2:])
 	_, err := initLogsApiClient(
 		logsapi.Options{
-			ExtensionID:         extensionID,
-			LogServerAddress:    ":::",
-			AwsLambdaRuntimeAPI: strings.Join(strings.Split(runtimeApiServer.URL, ":")[1:], ":")[2:],
-			ErrCallback:         &errCallback,
+			ExtensionID:      extensionID,
+			LogServerAddress: ":::",
+			ErrCallback: func(err error) {
+				closeErr = err
+				errWaitgroup.Done()
+			},
 		},
 		ctx,
 	)
@@ -91,11 +87,11 @@ func TestInitLogsApiClientWithNoRuntimeApi(t *testing.T) {
 	extensionID := "TEST_EXTENSION_ID"
 	ctx := context.Background()
 
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:0")
 	_, err := initLogsApiClient(
 		logsapi.Options{
-			ExtensionID:         extensionID,
-			LogServerAddress:    "127.0.0.1:0",
-			AwsLambdaRuntimeAPI: "127.0.0.1:0",
+			ExtensionID:      extensionID,
+			LogServerAddress: "127.0.0.1:0",
 		},
 		ctx,
 	)
