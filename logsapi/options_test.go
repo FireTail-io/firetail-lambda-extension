@@ -74,6 +74,7 @@ func TestLoadEnvVarsNegativeIntegers(t *testing.T) {
 			),
 			err.Error(),
 		)
+		t.Setenv(integerEnvVar, "3142")
 	}
 }
 
