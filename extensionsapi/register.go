@@ -33,7 +33,7 @@ type RegisterResponse struct {
 }
 
 // Register will register the extension with the Extensions API
-func (e *Client) Register(ctx context.Context, filename string) (*RegisterResponse, error) {
+func (e *Client) Register(ctx context.Context, extensionName string) (*RegisterResponse, error) {
 	const action = "/register"
 	url := e.extensionsApiUrl + action
 
@@ -47,7 +47,7 @@ func (e *Client) Register(ctx context.Context, filename string) (*RegisterRespon
 	if err != nil {
 		return nil, err
 	}
-	httpReq.Header.Set(extensionNameHeader, filename)
+	httpReq.Header.Set(extensionNameHeader, extensionName)
 	httpRes, err := e.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
