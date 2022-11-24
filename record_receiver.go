@@ -10,6 +10,8 @@ import (
 // recordReceiver receives records from the logServer into batches & attempts to send them to Firetail until
 // logServer.ReceiveRecords returns that there are no records remaining.
 func recordReceiver(logsApiClient *logsapi.Client, wg *sync.WaitGroup) {
+	log.Println("Starting record receiver routine...")
+
 	firetailApiToken, firetailApiUrl := getFiretailApiConfig()
 
 	recordsBatch := []firetail.Record{}
@@ -25,6 +27,7 @@ func recordReceiver(logsApiClient *logsapi.Client, wg *sync.WaitGroup) {
 			if recordsRemaining {
 				continue
 			} else {
+				log.Println("No records left to receive, exiting...")
 				wg.Done()
 				return
 			}
