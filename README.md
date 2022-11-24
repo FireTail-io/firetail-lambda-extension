@@ -8,7 +8,9 @@
 
 The Firetail Logging Extension receives AWS Lambda events & response payloads and sends them to the Firetail Logging API.
 
-The extension receives these events and response payloads via a runtime-specific Firetail library which you will need to use in your Function code. The Firetail library outputs specifically formatted logs which the extension then receives via the [Lambda Logs API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html). You can find a table of Firetail function libraries which correspond with a Lambda runtime in the [Function Libraries](#function-libraries) section.
+The extension receives these events and response payloads via a runtime-specific Firetail library which you will need to use in your Function code. The Firetail library outputs specifically formatted logs which the extension then receives via the [Lambda Logs API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html). You can find a table of Firetail function libraries which correspond with a Lambda runtime in the [Function Libraries](#function-libraries) section. Below is a diagram depicting how the Firetail extension, Extensions API, Logs API and Firetail API interact over the lifetime of a Lambda.
+
+![Firetail Lambda Extension Lifecycle Diagram](./docs/imgs/extension-lifecycle.svg)
 
 
 
