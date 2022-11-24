@@ -14,11 +14,8 @@ import (
 type EventType string
 
 const (
-	// Invoke is a lambda invoke
-	Invoke EventType = "INVOKE"
-
-	// Shutdown is a shutdown event for the environment
-	Shutdown EventType = "SHUTDOWN"
+	Invoke   EventType = "INVOKE"   // a lambda invoke
+	Shutdown EventType = "SHUTDOWN" // shutdown event for the environment
 
 	extensionNameHeader      = "Lambda-Extension-Name"
 	extensionIdentiferHeader = "Lambda-Extension-Identifier"

@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 package extensionsapi
 
 import (
@@ -16,7 +13,6 @@ type Client struct {
 	ExtensionID      string
 }
 
-// NewClient returns a Lambda Extensions API client
 func NewClient() *Client {
 	return &Client{
 		extensionsApiUrl: fmt.Sprintf("http://%s/2020-01-01/extension", os.Getenv("AWS_LAMBDA_RUNTIME_API")),

@@ -22,8 +22,6 @@ func awaitShutdown(extensionClient *extensionsapi.Client, ctx context.Context) (
 			if err != nil {
 				return "", errors.WithMessage(err, "failed to get next event")
 			}
-
-			// Exit if we receive a SHUTDOWN event
 			if res.EventType == extensionsapi.Shutdown {
 				return "received shutdown event", nil
 			}

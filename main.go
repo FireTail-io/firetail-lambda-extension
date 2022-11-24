@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 package main
 
 import (
@@ -35,6 +32,7 @@ func main() {
 		panic(err)
 	}
 
+	// Create a logsApiClient & remember to shut it down when we're done
 	logsApiClient, err := initLogsApiClient(logsapi.Options{
 		ExtensionID:      extensionClient.ExtensionID,
 		LogServerAddress: "sandbox:1234",
