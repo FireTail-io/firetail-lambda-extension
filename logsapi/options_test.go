@@ -2,8 +2,12 @@ package logsapi
 
 import (
 	"bytes"
+	"firetail-lambda-extension/firetail"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/pkg/errors"
@@ -105,4 +109,56 @@ func TestDefaultErrCallback(t *testing.T) {
 	require.Nil(t, err)
 
 	assert.Contains(t, logOutput, testErr.Error())
+}
+
+func TestDefaultBatchCallback(t *testing.T) {
+	var requestBody []byte
+
+	http.DefaultServeMux = new(http.ServeMux)
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var err error
+		requestBody, err = ioutil.ReadAll(r.Body)
+		require.Nil(t, err)
+		fmt.Fprintf(w, `{"message":"success"}`)
+	}))
+	defer testServer.Close()
+
+	testOptions := &Options{
+		firetailApiUrl: testServer.URL,
+	}
+	testOptions.setDefaults()
+
+	err := testOptions.BatchCallback([]firetail.Record{
+		{
+			Event: []byte(`{"description":"test event"}`),
+			Response: firetail.RecordResponse{
+				StatusCode: 200,
+				Body:       `{"description":"test response body"}`,
+			},
+			ExecutionTime: 3.142,
+		},
+	})
+	require.Nil(t, err)
+
+	assert.Equal(t, "{\"dateCreated\":0,\"executionTime\":3.142,\"request\":{\"body\":\"\",\"headers\":{},\"httpProtocol\":\"\",\"ip\":\"\",\"method\":\"\",\"uri\":\"https://\",\"resource\":\"\"},\"response\":{\"body\":\"{\\\"description\\\":\\\"test response body\\\"}\",\"headers\":{},\"statusCode\":200},\"version\":\"1.0.0-alpha\"}\n", string(requestBody))
+}
+
+func TestDefaultBatchCallbackFail(t *testing.T) {
+	testOptions := &Options{
+		firetailApiUrl: "\n",
+	}
+	testOptions.setDefaults()
+
+	err := testOptions.BatchCallback([]firetail.Record{
+		{
+			Event: []byte(`{"description":"test event"}`),
+			Response: firetail.RecordResponse{
+				StatusCode: 200,
+				Body:       `{"description":"test response body"}`,
+			},
+			ExecutionTime: 3.142,
+		},
+	})
+	require.NotNil(t, err)
+	assert.Equal(t, "Err sending 0 record(s) to Firetail SaaS: 1 error occurred:\n\t* parse \"\\n\": net/url: invalid control character in URL\n\n", err.Error())
 }
