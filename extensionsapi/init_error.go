@@ -16,7 +16,7 @@ type StatusResponse struct {
 // InitError reports an initialization error to the platform. Call it when you registered but failed to initialize
 func (e *Client) InitError(ctx context.Context, errorType string) (*StatusResponse, error) {
 	const action = "/init/error"
-	url := e.baseURL + action
+	url := e.extensionsApiUrl + action
 
 	httpReq, err := http.NewRequestWithContext(ctx, "POST", url, nil)
 	if err != nil {

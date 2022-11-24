@@ -35,7 +35,7 @@ type RegisterResponse struct {
 // Register will register the extension with the Extensions API
 func (e *Client) Register(ctx context.Context, filename string) (*RegisterResponse, error) {
 	const action = "/register"
-	url := e.baseURL + action
+	url := e.extensionsApiUrl + action
 
 	reqBody, err := json.Marshal(map[string]interface{}{
 		"events": []EventType{Invoke, Shutdown},

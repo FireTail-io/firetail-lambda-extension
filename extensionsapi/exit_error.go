@@ -11,7 +11,7 @@ import (
 // ExitError reports an error to the platform before exiting. Call it when you encounter an unexpected failure
 func (e *Client) ExitError(ctx context.Context, errorType string) (*StatusResponse, error) {
 	const action = "/exit/error"
-	url := e.baseURL + action
+	url := e.extensionsApiUrl + action
 
 	httpReq, err := http.NewRequestWithContext(ctx, "POST", url, nil)
 	if err != nil {

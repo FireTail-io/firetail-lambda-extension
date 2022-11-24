@@ -26,7 +26,7 @@ type NextEventResponse struct {
 // NextEvent blocks while long polling for the next lambda invoke or shutdown
 func (e *Client) NextEvent(ctx context.Context) (*NextEventResponse, error) {
 	const action = "/event/next"
-	url := e.baseURL + action
+	url := e.extensionsApiUrl + action
 
 	httpReq, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
