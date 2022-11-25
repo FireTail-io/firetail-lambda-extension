@@ -26,6 +26,7 @@ func (c *Client) recordReceiver() {
 		// Give the batch to the batch callback. If it errs, we continue
 		err := c.batchCallback(recordsBatch)
 		if err != nil {
+			c.errCallback(err)
 			continue
 		}
 

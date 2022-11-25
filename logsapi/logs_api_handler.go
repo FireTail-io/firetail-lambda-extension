@@ -3,7 +3,6 @@ package logsapi
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -27,7 +26,6 @@ func (c *Client) logsApiHandler(w http.ResponseWriter, r *http.Request) {
 	if errs != nil {
 		c.errCallback(errs)
 	}
-	log.Printf("Received %d firetail records from Lambda Logs API", len(newFiretailRecords))
 
 	for _, firetailRecord := range newFiretailRecords {
 		c.recordsChannel <- firetailRecord

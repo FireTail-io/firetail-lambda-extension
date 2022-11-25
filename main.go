@@ -19,6 +19,8 @@ func main() {
 	if isDebug, err := strconv.ParseBool(os.Getenv("FIRETAIL_EXTENSION_DEBUG")); err != nil || !isDebug {
 		// If we're not in debug mode, we'll just send the logs to the void
 		log.SetOutput(ioutil.Discard)
+	} else {
+		log.Println("Firetail extension starting in debug mode.")
 	}
 
 	// This context will be cancelled whenever a SIGTERM or SIGINT signal is received
@@ -31,6 +33,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Println("Registered extension, ID:", extensionClient.ExtensionID)
 
 	// Create a logsApiClient & remember to shut it down when we're done
 	logsApiClient, err := initLogsApiClient(logsapi.Options{
