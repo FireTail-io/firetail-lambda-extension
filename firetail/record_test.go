@@ -2,7 +2,6 @@ package firetail
 
 import (
 	"encoding/json"
-	"log"
 	"strings"
 	"testing"
 
@@ -124,8 +123,6 @@ func TestEncodeAndDecodeRecord(t *testing.T) {
 	remarshalledRecordBytes, err := unmarshalledRecord.Marshal()
 	require.Nil(t, err)
 	assert.Equal(t, testRecordBytes, remarshalledRecordBytes)
-
-	log.Println(string(remarshalledRecordBytes))
 }
 
 func TestGetLogEntryRequestAPIGatewayProxyRequest(t *testing.T) {
@@ -161,8 +158,6 @@ func TestGetLogEntryRequestAPIGatewayProxyRequestWithNoRequestHeaders(t *testing
 	// and marshalling it here, as the Headers field of the events.APIGatewayProxyRequest has not been
 	// tagged as omitempty. 🥲
 	apiGatewayProxyRequestBytes := []byte(`{"resource":"/hi","path":"/hi","httpMethod":"GET","queryStringParameters":null,"multiValueQueryStringParameters":null,"pathParameters":null,"stageVariables":null,"requestContext":{"accountId":"453671210445","resourceId":"GET /hi","stage":"$default","domainName":"5iagptskg6.execute-api.eu-west-2.amazonaws.com","domainPrefix":"5iagptskg6","requestId":"bvmgijZArPEEJ0w=","extendedRequestId":"bvmgijZArPEEJ0w=","protocol":"HTTP/1.1","identity":{"cognitoIdentityPoolId":"","accountId":"","cognitoIdentityId":"","caller":"","apiKey":"","apiKeyId":"","accessKey":"","sourceIp":"37.228.214.117","cognitoAuthenticationType":"","cognitoAuthenticationProvider":"","userArn":"","userAgent":"PostmanRuntime/7.28.4","user":""},"resourcePath":"/hi","path":"/hi","authorizer":null,"httpMethod":"GET","requestTime":"17/Nov/2022:11:41:55 +0000","requestTimeEpoch":1668685315222,"apiId":"5iagptskg6"},"body":""}`)
-
-	log.Print(string(apiGatewayProxyRequestBytes))
 
 	testRecord := Record{
 		Event: json.RawMessage(apiGatewayProxyRequestBytes),

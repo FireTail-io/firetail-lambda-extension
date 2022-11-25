@@ -5,7 +5,6 @@ import (
 	"context"
 	"firetail-lambda-extension/firetail"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -50,7 +49,6 @@ func TestRecordReceiverBatchCallbackFail(t *testing.T) {
 	shutdownWaitgroup.Add(1)
 	defer shutdownWaitgroup.Wait()
 	go func() {
-		log.Println("Listening and serving...")
 		err := client.ListenAndServe()
 		assert.Equal(t, "http: Server closed", err.Error())
 		shutdownWaitgroup.Done()
@@ -71,7 +69,6 @@ func TestRecordReceiverBatchCallbackFail(t *testing.T) {
 
 	// Test the logs API client gave a 200 response
 	result := recorder.Result()
-	log.Println(result)
 	assert.Equal(t, 200, result.StatusCode)
 
 	// Wait until the batch callback has received at least 1 batch
@@ -125,7 +122,6 @@ func TestRecordReceiverMaxBatchSize(t *testing.T) {
 	shutdownWaitgroup.Add(1)
 	defer shutdownWaitgroup.Wait()
 	go func() {
-		log.Println("Listening and serving...")
 		err := client.ListenAndServe()
 		assert.Equal(t, "http: Server closed", err.Error())
 		shutdownWaitgroup.Done()
