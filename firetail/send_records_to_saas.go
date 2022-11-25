@@ -73,7 +73,7 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 		return marshalledRecords, multierror.Append(errs, fmt.Errorf("Failed to decode logs API response: %s", err.Error()))
 	}
 	if res["message"] != "success" {
-		return marshalledRecords, multierror.Append(errs, fmt.Errorf("Got err response from firetail api: %v, req body:\n'%s'\n", res, string(reqBytes)))
+		return marshalledRecords, multierror.Append(errs, fmt.Errorf("Got err response from firetail api: %v", res))
 	}
 
 	return marshalledRecords, errs
