@@ -21,6 +21,8 @@ This example demonstrates how to setup a simple HTTP GET endpoint. Once you fetc
 ## Deploy
 
 ```bash
+pip3 install -t src/vendor -r aws_requirements.txt
+npm install
 serverless deploy
 ```
 
@@ -38,7 +40,7 @@ Serverless: Stack update finished...
 Service Information
 service: aws-python-simple-http-endpoint
 stage: dev
-region: us-east-1
+region: eu-west-1
 api keys:
   None
 endpoints:
