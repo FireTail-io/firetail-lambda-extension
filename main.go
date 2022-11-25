@@ -33,6 +33,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	log.Println("Registered extension, ID:", extensionClient.ExtensionID)
 
 	// Create a logsApiClient & remember to shut it down when we're done
 	logsApiClient, err := initLogsApiClient(logsapi.Options{
