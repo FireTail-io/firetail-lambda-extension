@@ -87,7 +87,6 @@ func (o *Options) setDefaults() {
 			recordsSent, err := firetail.SendRecordsToSaaS(batch, o.firetailApiUrl, o.firetailApiToken)
 			if err != nil {
 				err = errors.WithMessage(err, fmt.Sprintf("Err sending %d record(s) to Firetail SaaS", recordsSent))
-				log.Println(err.Error())
 				return err
 			}
 			log.Printf("Successfully sent %d record(s) sent to Firetail.", recordsSent)
