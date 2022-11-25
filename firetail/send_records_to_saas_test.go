@@ -93,7 +93,7 @@ func TestSendRecordToUnavailableSaas(t *testing.T) {
 	testRecord := getValidRecord(t)
 
 	recordsSent, err := SendRecordsToSaaS([]Record{testRecord}, testServer.URL, "")
-	assert.Equal(t, 0, recordsSent)
+	assert.Equal(t, 1, recordsSent)
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "connect: connection refused")
 	assert.Contains(t, err.Error(), "Failed to make log request, err: Post")
