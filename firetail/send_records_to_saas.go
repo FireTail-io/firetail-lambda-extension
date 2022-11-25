@@ -64,7 +64,7 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 	// TODO: investigate above.
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return 0, multierror.Append(errs, fmt.Errorf("Failed to make log request, err: %s", err.Error()))
+		return marshalledRecords, multierror.Append(errs, fmt.Errorf("Failed to make log request, err: %s", err.Error()))
 	}
 
 	var res map[string]interface{}
