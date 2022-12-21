@@ -215,7 +215,7 @@ resource "aws_lambda_function" "extensions-demo-example-lambda-python" {
         environment {
                 variables = {
                         FIRETAIL_API_TOKEN = "firetail-api-key",
-                        FIRETAIL_API_URL = "https://api.logging.eu-west-1.sandbox.firetail.app/logs/bulk"
+                        FIRETAIL_API_URL = "https://api.logging.eu-west-1.prod.firetail.app/logs/bulk"
                 }
         }
 
