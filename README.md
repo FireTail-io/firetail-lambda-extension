@@ -194,7 +194,7 @@ docker build . -t layer-image1:latest \
 --build-arg AWS_DEFAULT_REGION=us-east-1 \
 --build-arg AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE \
 --build-arg AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
---build-arg AWS_LAYER_ARN=arn:aws:lambda:us-east-1:453671210445:layer:firetail-extension-x86_64-v1-0-0:1
+--build-arg AWS_LAYER_ARN=arn:aws:lambda:us-east-1:247286868737:layer:firetail-extension-x86_64-v1-0-0:1
 ```
 
 
@@ -220,7 +220,7 @@ resource "aws_lambda_function" "extensions-demo-example-lambda-python" {
         }
 
         layers = [
-            "arn:aws:lambda:<AWS_REGION>:453671210445:layer:firetail-extension-<ARCH>-<VERSION>:1"
+            "arn:aws:lambda:<AWS_REGION>:247286868737:layer:firetail-extension-<ARCH>-<VERSION>:1"
         ]
 }
 ```
