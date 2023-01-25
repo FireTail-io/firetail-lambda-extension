@@ -62,7 +62,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ matrix.aws-region }}
-          role-to-assume: arn:aws:iam::453671210445:role/firetail-sandbox-github-release-access
+          role-to-assume: arn:aws:iam::247286868737:role/firetail-sandbox-github-release-access
           role-session-name: github
 
       - uses: actions/checkout@v3
