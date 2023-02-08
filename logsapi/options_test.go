@@ -78,18 +78,11 @@ func TestLoadEnvVarsNegativeIntegers(t *testing.T) {
 	}
 }
 
-func TestLoadEnvVarsNoApiToken(t *testing.T) {
-	testOptions := Options{}
-	err := testOptions.loadEnvVars()
-	require.NotNil(t, err)
-	assert.Equal(t, "FIRETAIL_API_TOKEN not set", err.Error())
-}
-
 func TestLoadEnvVarsDefaults(t *testing.T) {
-	t.Setenv("FIRETAIL_API_TOKEN", "TEST_TOKEN")
 	testOptions := Options{}
 	err := testOptions.loadEnvVars()
 	require.Nil(t, err)
+	assert.Equal(t, "", testOptions.firetailApiToken)
 	assert.Equal(t, DefaultRecordsBufferSize, testOptions.recordsBufferSize)
 	assert.Equal(t, DefaultMaxBatchSize, testOptions.maxBatchSize)
 	assert.Equal(t, DefaultFiretailApiUrl, testOptions.firetailApiUrl)
@@ -125,7 +118,8 @@ func TestDefaultBatchCallback(t *testing.T) {
 	defer testServer.Close()
 
 	testOptions := &Options{
-		firetailApiUrl: testServer.URL,
+		firetailApiToken: "TEST_TOKEN",
+		firetailApiUrl:   testServer.URL,
 	}
 	testOptions.setDefaults()
 
@@ -146,7 +140,8 @@ func TestDefaultBatchCallback(t *testing.T) {
 
 func TestDefaultBatchCallbackFail(t *testing.T) {
 	testOptions := &Options{
-		firetailApiUrl: "\n",
+		firetailApiToken: "TEST_TOKEN",
+		firetailApiUrl:   "\n",
 	}
 	testOptions.setDefaults()
 
