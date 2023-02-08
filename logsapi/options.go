@@ -64,12 +64,7 @@ func (o *Options) loadEnvVars() error {
 		o.maxBatchSize = maxBatchSize
 	}
 
-	firetailApiToken := os.Getenv("FIRETAIL_API_TOKEN")
-	if firetailApiToken == "" {
-		return errors.New("FIRETAIL_API_TOKEN not set")
-	}
-	o.firetailApiToken = firetailApiToken
-
+	o.firetailApiToken = os.Getenv("FIRETAIL_API_TOKEN")
 	firetailApiUrl := os.Getenv("FIRETAIL_API_URL")
 	if firetailApiUrl == "" {
 		firetailApiUrl = DefaultFiretailApiUrl
