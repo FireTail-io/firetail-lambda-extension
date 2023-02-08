@@ -29,7 +29,7 @@ type Options struct {
 	awsLambdaRuntimeAPI string // The URL of the Lambda Runtime API
 	maxBatchSize        int    // The maximum size of a batch to provide to the BatchCallback
 	recordsBufferSize   int    // The size of the records channel buffer
-	firetailApiUrl      string // The URL of the Firetail Logging API used by the default BatchCallback
+	firetailApiUrl      string // The URL of the Firetail Logging API used by the default BatchCallback. If it is the empty string, the default BatchCallback is noop
 	firetailApiToken    string // The API token for the Firetail Logging API used by the default BatchCallback
 }
 
@@ -77,6 +77,10 @@ func (o *Options) loadEnvVars() error {
 func (o *Options) setDefaults() {
 	if o.BatchCallback == nil {
 		o.BatchCallback = func(batch []firetail.Record) error {
+			// If there's no token set, then there's nothing to do - the default is noop
+			if o.firetailApiToken == "" {
+				return nil
+			}
 			// Try to send the batch to Firetail
 			log.Printf("Attempting to send batch of %d record(s) to Firetail...", len(batch))
 			recordsSent, err := firetail.SendRecordsToSaaS(batch, o.firetailApiUrl, o.firetailApiToken)
