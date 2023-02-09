@@ -48,7 +48,8 @@ func (c *Client) Start(ctx context.Context) error {
 	err := c.httpServer.ListenAndServe()
 
 	if err != http.ErrServerClosed {
-		c.errCallback(errors.WithMessage(err, "Log server closed unexpectedly"))
+		err = errors.WithMessage(err, "Log server closed unexpectedly")
+		c.errCallback(err)
 		c.Shutdown(ctx)
 	} else if err != nil {
 		c.errCallback(err)
