@@ -20,7 +20,10 @@ type Client struct {
 
 func NewClient(options Options) (*Client, error) {
 	options.setDefaults()
-	options.loadEnvVars()
+	err := options.loadEnvVars()
+	if err != nil {
+		return nil, err
+	}
 
 	client := &Client{
 		recordsChannel:    make(chan firetail.Record, options.recordsBufferSize),
@@ -31,7 +34,7 @@ func NewClient(options Options) (*Client, error) {
 		batchCallback:     options.BatchCallback,
 	}
 
-	err := subscribeToLogsApi(options.awsLambdaRuntimeAPI, options.ExtensionID)
+	err = subscribeToLogsApi(options.awsLambdaRuntimeAPI, options.ExtensionID)
 	if err != nil {
 		return nil, err
 	}
