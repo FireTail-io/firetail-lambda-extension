@@ -43,6 +43,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	go logsApiClient.Start(ctx)
 	defer logsApiClient.Shutdown(ctx)
 
 	// awaitShutdown will block until a shutdown event is received, or the context is cancelled

@@ -11,7 +11,5 @@ func initLogsApiClient(options logsapi.Options, ctx context.Context) (*logsapi.C
 		return nil, err
 	}
 
-	go logServer.Start(ctx)
-
 	return logServer, nil
 }
