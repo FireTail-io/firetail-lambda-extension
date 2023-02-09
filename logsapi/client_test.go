@@ -42,7 +42,7 @@ func TestNewClient(t *testing.T) {
 	shutdownWaitgroup.Add(1)
 	defer shutdownWaitgroup.Wait()
 	go func() {
-		err := client.ListenAndServe()
+		err := client.Start(context.Background())
 		assert.Equal(t, "http: Server closed", err.Error())
 		shutdownWaitgroup.Done()
 	}()
