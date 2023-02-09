@@ -35,7 +35,7 @@ func main() {
 	}
 	log.Println("Registered extension, ID:", extensionClient.ExtensionID)
 
-	// Create a logsApiClient & remember to shut it down when we're done
+	// Create a logsApiClient, start it & remember to shut it down when we're done
 	logsApiClient, err := logsapi.NewClient(logsapi.Options{
 		ExtensionID:      extensionClient.ExtensionID,
 		LogServerAddress: "sandbox:1234",
