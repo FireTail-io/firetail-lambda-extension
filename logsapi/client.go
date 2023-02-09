@@ -62,6 +62,7 @@ func (c *Client) Start(ctx context.Context) error {
 }
 
 func (c *Client) Shutdown(ctx context.Context) error {
+	err := c.httpServer.Shutdown(ctx)
 	close(c.recordsChannel)
-	return c.httpServer.Shutdown(ctx)
+	return err
 }
