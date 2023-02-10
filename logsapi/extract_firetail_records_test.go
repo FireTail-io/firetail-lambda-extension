@@ -40,7 +40,7 @@ func TestDecodeFiretailRecordWithMissingPart(t *testing.T) {
 	assert.Equal(t, "record had 2 parts when split by ':'", err.Error())
 }
 
-func TestDecodeFiretailRecordWithExtraPart(t *testing.T) {
+func TestDecodeFiretailRecordWithExtraPartSuffixed(t *testing.T) {
 	testRecord := firetail.Record{
 		Response: firetail.RecordResponse{
 			StatusCode: 200,
@@ -57,6 +57,24 @@ func TestDecodeFiretailRecordWithExtraPart(t *testing.T) {
 	require.NotNil(t, err)
 
 	assert.Equal(t, "record did not have firetail prefix", err.Error())
+}
+
+func TestDecodeFiretailRecordWithExtraPartPrefixed(t *testing.T) {
+	testRecord := firetail.Record{
+		Response: firetail.RecordResponse{
+			StatusCode: 200,
+			Body:       "Test Body",
+		},
+	}
+	testPayloadBytes, err := json.Marshal(testRecord)
+	require.Nil(t, err)
+
+	encodedRecord := "extra:firetail:log-ext:" + base64.StdEncoding.EncodeToString(testPayloadBytes) + ""
+
+	decodedRecord, err := decodeFiretailRecord(encodedRecord)
+	require.Nil(t, err)
+
+	assert.Equal(t, testRecord.Response, *&decodedRecord.Response)
 }
 
 func TestDecodeFiretailRecordWithInvalidPrefix(t *testing.T) {
