@@ -35,14 +35,15 @@ func main() {
 	}
 	log.Println("Registered extension, ID:", extensionClient.ExtensionID)
 
-	// Create a logsApiClient & remember to shut it down when we're done
-	logsApiClient, err := initLogsApiClient(logsapi.Options{
+	// Create a logsApiClient, start it & remember to shut it down when we're done
+	logsApiClient, err := logsapi.NewClient(logsapi.Options{
 		ExtensionID:      extensionClient.ExtensionID,
 		LogServerAddress: "sandbox:1234",
-	}, ctx)
+	})
 	if err != nil {
 		panic(err)
 	}
+	go logsApiClient.Start(ctx)
 	defer logsApiClient.Shutdown(ctx)
 
 	// awaitShutdown will block until a shutdown event is received, or the context is cancelled

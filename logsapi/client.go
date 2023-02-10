@@ -5,6 +5,8 @@ import (
 	"firetail-lambda-extension/firetail"
 	"net/http"
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 type Client struct {
@@ -45,11 +47,22 @@ func NewClient(options Options) (*Client, error) {
 	return client, nil
 }
 
-func (c *Client) ListenAndServe() error {
-	return c.httpServer.ListenAndServe()
+func (c *Client) Start(ctx context.Context) error {
+	err := c.httpServer.ListenAndServe()
+
+	if err != http.ErrServerClosed {
+		err = errors.WithMessage(err, "Log server closed unexpectedly")
+		c.errCallback(err)
+		c.Shutdown(ctx)
+	} else if err != nil {
+		c.errCallback(err)
+	}
+
+	return err
 }
 
 func (c *Client) Shutdown(ctx context.Context) error {
+	err := c.httpServer.Shutdown(ctx)
 	close(c.recordsChannel)
-	return c.httpServer.Shutdown(ctx)
+	return err
 }

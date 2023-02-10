@@ -42,7 +42,7 @@ func TestNewClient(t *testing.T) {
 	shutdownWaitgroup.Add(1)
 	defer shutdownWaitgroup.Wait()
 	go func() {
-		err := client.ListenAndServe()
+		err := client.Start(context.Background())
 		assert.Equal(t, "http: Server closed", err.Error())
 		shutdownWaitgroup.Done()
 	}()
@@ -121,4 +121,51 @@ func TestNewClientSubscribeNoServer(t *testing.T) {
 
 	// This may vary depending upon the runtime
 	assert.Contains(t, err.Error(), "Err doing subscription request: Put \"http://127.0.0.1:0/2020-08-15/logs\"")
+}
+
+func TestNewClientWithInvalidLogServerAddress(t *testing.T) {
+	http.DefaultServeMux = new(http.ServeMux)
+	runtimeApiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, `{"eventType": "SHUTDOWN"}`)
+	}))
+	defer runtimeApiServer.Close()
+
+	extensionID := "TEST_EXTENSION_ID"
+	ctx := context.Background()
+
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", strings.Join(strings.Split(runtimeApiServer.URL, ":")[1:], ":")[2:])
+	logsApiClient, err := NewClient(
+		Options{
+			ExtensionID:      extensionID,
+			LogServerAddress: ":::",
+		},
+	)
+	require.Nil(t, err)
+
+	var closeErr error
+	errWaitgroup := sync.WaitGroup{}
+	errWaitgroup.Add(1)
+	go func() {
+		closeErr = logsApiClient.Start(ctx)
+		errWaitgroup.Done()
+	}()
+
+	errWaitgroup.Wait()
+	assert.Equal(t, "Log server closed unexpectedly: listen tcp: address :::: too many colons in address", closeErr.Error())
+}
+
+func TestNewClientWithNoRuntimeApi(t *testing.T) {
+	http.DefaultServeMux = new(http.ServeMux)
+
+	extensionID := "TEST_EXTENSION_ID"
+
+	t.Setenv("AWS_LAMBDA_RUNTIME_API", "127.0.0.1:0")
+	_, err := NewClient(
+		Options{
+			ExtensionID:      extensionID,
+			LogServerAddress: "127.0.0.1:0",
+		},
+	)
+	require.NotNil(t, err)
+	assert.Contains(t, err.Error(), "Err doing subscription request")
 }
