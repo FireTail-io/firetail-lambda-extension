@@ -55,5 +55,5 @@ func main() {
 
 	// Sleep for 500ms to allow any final logs to be sent to the extension by the Lambda Logs API
 	log.Printf("Sleeping for 500ms to allow final logs to be processed...")
-	time.Sleep(500)
+	time.Sleep(500 * time.Millisecond)
 }
