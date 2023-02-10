@@ -56,7 +56,7 @@ func TestDecodeFiretailRecordWithExtraPart(t *testing.T) {
 	assert.Nil(t, decodedRecord)
 	require.NotNil(t, err)
 
-	assert.Equal(t, "record had 4 parts when split by ':'", err.Error())
+	assert.Equal(t, "record did not have firetail prefix", err.Error())
 }
 
 func TestDecodeFiretailRecordWithInvalidPrefix(t *testing.T) {
