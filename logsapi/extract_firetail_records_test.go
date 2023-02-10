@@ -78,6 +78,24 @@ func TestDecodeFiretailRecordWithInvalidPrefix(t *testing.T) {
 	assert.Equal(t, "record did not have firetail prefix", err.Error())
 }
 
+func TestDecodeFiretailRecordWithTimestampPrefix(t *testing.T) {
+	testRecord := firetail.Record{
+		Response: firetail.RecordResponse{
+			StatusCode: 200,
+			Body:       "Test Body",
+		},
+	}
+	testPayloadBytes, err := json.Marshal(testRecord)
+	require.Nil(t, err)
+
+	encodedRecord := "2023-02-09T14:12:59.574Z    7b9025e7-228f-4f39-ab16-1cadba2bb3f6    INFO    firetail:log-ext:" + base64.StdEncoding.EncodeToString(testPayloadBytes)
+
+	decodedRecord, err := decodeFiretailRecord(encodedRecord)
+	require.Nil(t, err)
+
+	assert.Equal(t, testRecord.Response, *&decodedRecord.Response)
+}
+
 func TestDecodeFiretailRecordWithInvalidToken(t *testing.T) {
 	testRecord := firetail.Record{
 		Response: firetail.RecordResponse{
