@@ -51,11 +51,16 @@ func extractFiretailRecords(requestBody []byte) ([]firetail.Record, error) {
 func decodeFiretailRecord(record string) (*firetail.Record, error) {
 	recordParts := strings.Split(record, ":")
 
-	if len(recordParts) != 3 {
+	if len(recordParts) < 3 {
 		return nil, fmt.Errorf("record had %d parts when split by ':'", len(recordParts))
 	}
 
-	if recordParts[0] != "firetail" {
+	// If there's more than 3 parts, we take the last three; we're assuming the last part of the log is the payload we want.
+	if len(recordParts) > 3 {
+		recordParts = recordParts[len(recordParts)-3:]
+	}
+
+	if !strings.HasSuffix(recordParts[0], "firetail") {
 		return nil, fmt.Errorf("record did not have firetail prefix")
 	}
 
