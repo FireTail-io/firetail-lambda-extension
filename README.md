@@ -141,6 +141,16 @@ For example, for `ARCH=arm64` and `VERSION=v1-0-0` this should yield:
 arn:aws:lambda:us-east-1:247286868737:layer:firetail-extension-x86_64-v1-0-4:1
 ```
 
+Regardless of how you add the Lambda Layer to your Lambda Function, you will also need to configure at least one environment variable: `FIRETAIL_API_TOKEN`. Find below a full list of the environment variables used by the Firetail Lambda Extension:
+
+| Environment Variable     | Default Value                                               | Description                                                  |
+| ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| FIRETAIL_API_TOKEN       | None                                                        | Your API token for the Firetail Logging API. If left unset, no logs will be sent to the Firetail Logging API |
+| FIRETAIL_API_URL         | `https://api.logging.eu-west-1.prod.firetail.app/logs/bulk` | The URL of the Firetail Logging API                          |
+| FIRETAIL_EXTENSION_DEBUG | `false`                                                     | Enables debug logging from the extension if set to a value parsed as `true` by [strconv.ParseBool](https://pkg.go.dev/strconv#ParseBool) |
+| FIRETAIL_LOG_BUFFER_SIZE | `1000`                                                      | The maximum amount of logs the extension will hold in its buffer before being batched and sent to Firetail |
+| FIRETAIL_MAX_BATCH_SIZE  | `100`                                                       | The maximum size of a batch of logs to be sent to the Firetail logging API in one request |
+
 
 
 #### Using The AWS CLI
