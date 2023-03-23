@@ -109,6 +109,9 @@ func TestEncodeAndDecodeRecord(t *testing.T) {
 		Response: RecordResponse{
 			StatusCode: 200,
 			Body:       "{\"Description\":\"This is a test response body\"}",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 		ExecutionTime: 50,
 	}
@@ -135,6 +138,9 @@ func TestGetLogEntryRequestAPIGatewayProxyRequest(t *testing.T) {
 		Response: RecordResponse{
 			StatusCode: 200,
 			Body:       "{\"Description\":\"This is a test response body\"}",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 		ExecutionTime: 50,
 	}
@@ -164,6 +170,9 @@ func TestGetLogEntryRequestAPIGatewayProxyRequestWithNoRequestHeaders(t *testing
 		Response: RecordResponse{
 			StatusCode: 200,
 			Body:       "{\"Description\":\"This is a test response body\"}",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 		ExecutionTime: 50,
 	}
@@ -191,6 +200,9 @@ func TestGetLogEntryRequestAPIGatewayV2HTTPRequest(t *testing.T) {
 		Response: RecordResponse{
 			StatusCode: 200,
 			Body:       "{\"Description\":\"This is a test response body\"}",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 		ExecutionTime: 50,
 	}
@@ -228,6 +240,9 @@ func TestGetLogEntryRequestUnsupportedPayload(t *testing.T) {
 		Response: RecordResponse{
 			StatusCode: 200,
 			Body:       "{\"Description\":\"This is a test response body\"}",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 		ExecutionTime: 50,
 	}

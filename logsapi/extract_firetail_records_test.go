@@ -17,6 +17,9 @@ func TestDecodeFiretailRecordResponse(t *testing.T) {
 		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 	}
 	testPayloadBytes, err := json.Marshal(testRecord)
@@ -45,6 +48,9 @@ func TestDecodeFiretailRecordWithExtraPartSuffixed(t *testing.T) {
 		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 	}
 	testPayloadBytes, err := json.Marshal(testRecord)
@@ -64,6 +70,9 @@ func TestDecodeFiretailRecordWithExtraPartPrefixed(t *testing.T) {
 		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 	}
 	testPayloadBytes, err := json.Marshal(testRecord)
@@ -82,6 +91,9 @@ func TestDecodeFiretailRecordWithInvalidPrefix(t *testing.T) {
 		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 	}
 	testPayloadBytes, err := json.Marshal(testRecord)
@@ -101,6 +113,9 @@ func TestDecodeFiretailRecordWithTimestampPrefix(t *testing.T) {
 		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 	}
 	testPayloadBytes, err := json.Marshal(testRecord)
@@ -119,6 +134,9 @@ func TestDecodeFiretailRecordWithInvalidToken(t *testing.T) {
 		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 	}
 	testPayloadBytes, err := json.Marshal(testRecord)
@@ -138,6 +156,9 @@ func TestDecodeFiretailRecordWithInvalidPayloadEncoding(t *testing.T) {
 		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 	}
 	testPayloadBytes, err := json.Marshal(testRecord)
@@ -180,6 +201,9 @@ func TestExtractSingleRecord(t *testing.T) {
 		Response: firetail.RecordResponse{
 			StatusCode: 200,
 			Body:       "Test Body",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 	}
 	testPayloadBytes, err := json.Marshal(testRecord)
