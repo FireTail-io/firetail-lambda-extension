@@ -11,9 +11,13 @@ app = firetail_app()
 
 @firetail_handler(app)
 def endpoint(event, context):
+    current_time = datetime.datetime.now().time()
     return {
         "statusCode": 200,
         "body": json.dumps({
-            "message": "Hello, the current time is %s" % datetime.datetime.now().time()
-        })
+            "message": "Hello, the current time is %s" % current_time
+        }),
+        "headers": {
+            "Current-Time": "%s" % current_time
+        }
     }
