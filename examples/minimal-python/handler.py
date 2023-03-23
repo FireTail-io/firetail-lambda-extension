@@ -1,9 +1,11 @@
-import sys, base64, datetime, json, os, time
+import datetime
+import json
+import sys
 
 # Deps in src/vendor
 sys.path.insert(0, 'src/vendor')
 
-from firetail_lambda import firetail_handler, firetail_app
+from firetail_lambda import firetail_handler, firetail_app  # noqa: E402
 app = firetail_app()
 
 
