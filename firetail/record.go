@@ -27,8 +27,9 @@ type Record struct {
 
 // RecordResponse represents the response contained within a Firetail log Record
 type RecordResponse struct {
-	StatusCode int64  `json:"statusCode"`
-	Body       string `json:"body"`
+	StatusCode int64             `json:"statusCode"`
+	Body       string            `json:"body"`
+	Headers    map[string]string `json:"headers"`
 }
 
 // getLogEntryRequest returns the value for the request field of a Firetail SaaS LogEntry based upon the value of the firetail Record's Event value,
