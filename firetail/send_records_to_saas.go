@@ -25,13 +25,18 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 			continue
 		}
 
+		responseHeaders := map[string][]string{}
+		for headerName, headerValue := range record.Response.Headers {
+			responseHeaders[headerName] = []string{headerValue}
+		}
+
 		logEntryBytes, err := json.Marshal(LogEntry{
 			DateCreated:   requestTime,
 			ExecutionTime: record.ExecutionTime,
 			Request:       *logEntryRequest,
 			Response: LogEntryResponse{
 				Body:       record.Response.Body,
-				Headers:    map[string][]string{},
+				Headers:    responseHeaders,
 				StatusCode: record.Response.StatusCode,
 			},
 			Version: The100Alpha,

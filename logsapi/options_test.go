@@ -129,13 +129,19 @@ func TestDefaultBatchCallback(t *testing.T) {
 			Response: firetail.RecordResponse{
 				StatusCode: 200,
 				Body:       `{"description":"test response body"}`,
+				Headers: map[string]string{
+					"Test-Header-Name": "Test-Header-Value",
+				},
 			},
 			ExecutionTime: 3.142,
 		},
 	})
 	require.Nil(t, err)
 
-	assert.Equal(t, "{\"dateCreated\":0,\"executionTime\":3.142,\"request\":{\"body\":\"\",\"headers\":{},\"httpProtocol\":\"\",\"ip\":\"\",\"method\":\"\",\"uri\":\"https://\",\"resource\":\"\"},\"response\":{\"body\":\"{\\\"description\\\":\\\"test response body\\\"}\",\"headers\":{},\"statusCode\":200},\"version\":\"1.0.0-alpha\"}\n", string(requestBody))
+	assert.Equal(t,
+		"{\"dateCreated\":0,\"executionTime\":3.142,\"request\":{\"body\":\"\",\"headers\":{},\"httpProtocol\":\"\",\"ip\":\"\",\"method\":\"\",\"uri\":\"https://\",\"resource\":\"\"},\"response\":{\"body\":\"{\\\"description\\\":\\\"test response body\\\"}\",\"headers\":{\"Test-Header-Name\":[\"Test-Header-Value\"]},\"statusCode\":200},\"version\":\"1.0.0-alpha\"}\n",
+		string(requestBody),
+	)
 }
 
 func TestDefaultBatchCallbackFail(t *testing.T) {
@@ -151,6 +157,9 @@ func TestDefaultBatchCallbackFail(t *testing.T) {
 			Response: firetail.RecordResponse{
 				StatusCode: 200,
 				Body:       `{"description":"test response body"}`,
+				Headers: map[string]string{
+					"Test-Header-Name": "Test-Header-Value",
+				},
 			},
 			ExecutionTime: 3.142,
 		},

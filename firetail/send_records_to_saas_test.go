@@ -3,6 +3,7 @@ package firetail
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,6 +20,9 @@ func getValidRecord(t *testing.T) Record {
 		Response: RecordResponse{
 			StatusCode: 200,
 			Body:       "{\"Description\":\"This is a test response body\"}",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 		ExecutionTime: 50,
 	}
@@ -38,14 +42,20 @@ func getInvalidRecord(t *testing.T) Record {
 		Response: RecordResponse{
 			StatusCode: 200,
 			Body:       "{\"Description\":\"This is a test response body\"}",
+			Headers: map[string]string{
+				"Test-Header-Name": "Test-Header-Value",
+			},
 		},
 		ExecutionTime: 50,
 	}
 }
 
-func getTestServer() *httptest.Server {
+func getTestServer(t *testing.T, body *[]byte) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, `{"message":"success"}`)
+		var err error
+		*body, err = io.ReadAll(r.Body)
+		assert.Nil(t, err)
 	}))
 }
 
@@ -56,7 +66,8 @@ func getBrokenTestServer() *httptest.Server {
 }
 
 func TestSendRecordToSaas(t *testing.T) {
-	testServer := getTestServer()
+	var receivedBody []byte
+	testServer := getTestServer(t, &receivedBody)
 	defer testServer.Close()
 
 	testRecord := getValidRecord(t)
@@ -64,10 +75,15 @@ func TestSendRecordToSaas(t *testing.T) {
 	recordsSent, err := SendRecordsToSaaS([]Record{testRecord}, testServer.URL, "")
 	assert.Nil(t, err)
 	assert.Equal(t, 1, recordsSent)
+	assert.Equal(t,
+		"{\"dateCreated\":1668685315222,\"executionTime\":50,\"request\":{\"body\":\"\",\"headers\":{\"Content-Length\":[\"0\"],\"Host\":[\"5iagptskg6.execute-api.eu-west-2.amazonaws.com\"],\"Postman-Token\":[\"8639a798-d0e7-420a-bd98-0c5cb16c6115\"],\"User-Agent\":[\"PostmanRuntime/7.28.4\"],\"X-Amzn-Trace-Id\":[\"Root=1-63761e03-7bc79fb21f90dbbe66feba18\"],\"X-Forwarded-For\":[\"37.228.214.117\"],\"X-Forwarded-Port\":[\"443\"],\"X-Forwarded-Proto\":[\"https\"],\"accept\":[\"*/*\"],\"accept-encoding\":[\"gzip, deflate, br\"]},\"httpProtocol\":\"HTTP/1.1\",\"ip\":\"37.228.214.117\",\"method\":\"GET\",\"uri\":\"https://5iagptskg6.execute-api.eu-west-2.amazonaws.com/hi\",\"resource\":\"/hi\"},\"response\":{\"body\":\"{\\\"Description\\\":\\\"This is a test response body\\\"}\",\"headers\":{\"Test-Header-Name\":[\"Test-Header-Value\"]},\"statusCode\":200},\"version\":\"1.0.0-alpha\"}\n",
+		string(receivedBody),
+	)
 }
 
 func TestSendInvalidRecordToSaas(t *testing.T) {
-	testServer := getTestServer()
+	var receivedBody []byte
+	testServer := getTestServer(t, &receivedBody)
 	defer testServer.Close()
 
 	invalidRecord := getInvalidRecord(t)
@@ -77,6 +93,7 @@ func TestSendInvalidRecordToSaas(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "json: cannot unmarshal string into Go struct field APIGatewayProxyRequest.headers of type map[string]string")
 	assert.Contains(t, err.Error(), "json: cannot unmarshal string into Go struct field APIGatewayV2HTTPRequest.headers of type map[string]string")
+	assert.Nil(t, receivedBody)
 }
 
 func TestSendRecordToInvalidApiUrl(t *testing.T) {
@@ -87,7 +104,8 @@ func TestSendRecordToInvalidApiUrl(t *testing.T) {
 }
 
 func TestSendRecordToUnavailableSaas(t *testing.T) {
-	testServer := getTestServer()
+	var receivedBody []byte
+	testServer := getTestServer(t, &receivedBody)
 	testServer.Close()
 
 	testRecord := getValidRecord(t)
@@ -97,6 +115,7 @@ func TestSendRecordToUnavailableSaas(t *testing.T) {
 	require.NotNil(t, err)
 	assert.Contains(t, err.Error(), "connect: connection refused")
 	assert.Contains(t, err.Error(), "Failed to make log request, err: Post")
+	assert.Nil(t, receivedBody)
 }
 
 func TestSendRecordWithSaasFailure(t *testing.T) {
