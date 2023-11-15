@@ -141,12 +141,16 @@ For example, for `ARCH=amd64` and `VERSION=v1-1-0` this should yield:
 arn:aws:lambda:us-east-1:247286868737:layer:firetail-extension-x86_64-v1-1-0:1
 ```
 
-Regardless of how you add the Lambda Layer to your Lambda Function, you will also need to configure at least one environment variable: `FIRETAIL_API_TOKEN`. Find below a full list of the environment variables used by the FireTail Lambda Extension:
+Regardless of how you add the Lambda Layer to your Lambda Function, you will also need to configure at least one environment variable: `FIRETAIL_API_TOKEN`.
+
+If you are using not using the Firetail SaaS' default region then you will also need to set the environment variable `FIRETAIL_API_URL` appropriately. For example, for `us.firetail.app` the appropriate URL would be `https://api.logging.us-east-2.prod.firetail.app/logs/bulk`.
+
+Find below a full list of the environment variables used by the FireTail Lambda Extension:
 
 | Environment Variable     | Default Value                                               | Description                                                  |
 | ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------ |
 | FIRETAIL_API_TOKEN       | None                                                        | Your API token for the FireTail Logging API. If left unset, no logs will be sent to the Firetail Logging API. |
-| FIRETAIL_API_URL         | `https://api.logging.eu-west-1.prod.firetail.app/logs/bulk` | The URL of the FireTail Logging API.                          |
+| FIRETAIL_API_URL         | `https://api.logging.eu-west-1.prod.firetail.app/logs/bulk` | The URL of the FireTail Logging API. Note, if you are not using `firetail.app`'s default region this will need to be configured appropriately. |
 | FIRETAIL_EXTENSION_DEBUG | `false`                                                     | Enables debug logging from the extension if set to a value parsed as `true` by [strconv.ParseBool](https://pkg.go.dev/strconv#ParseBool). |
 | FIRETAIL_LOG_BUFFER_SIZE | `1000`                                                      | The maximum amount of logs the extension will hold in its buffer from which logs are batched and sent to FireTail. |
 | FIRETAIL_MAX_BATCH_SIZE  | `100`                                                       | The maximum size of a batch of logs to be sent to the FireTail logging API in one request. |
