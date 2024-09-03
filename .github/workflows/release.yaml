@@ -72,13 +72,13 @@ jobs:
           echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       - name: Download amd64 package artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: firetail-lambda-extension-amd64-${{ env.RELEASE_VERSION }}
           path: build
 
       - name: Download arm64 package artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: firetail-lambda-extension-arm64-${{ env.RELEASE_VERSION }}
           path: build
