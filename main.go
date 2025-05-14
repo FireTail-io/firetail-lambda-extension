@@ -2,10 +2,10 @@ package main
 
 import (
 	"firetail-lambda-extension/extensionsapi"
+	"firetail-lambda-extension/firetail"
 	"firetail-lambda-extension/logsapi"
 	"firetail-lambda-extension/proxy"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -50,44 +50,22 @@ func main() {
 		go logsApiClient.Start(ctx)
 		defer logsApiClient.Shutdown(ctx)
 	} else {
+		firetailApiUrl, firetailApiUrlSet := os.LookupEnv("FIRETAIL_API_URL")
+		if !firetailApiUrlSet {
+			firetailApiUrl = logsapi.DefaultFiretailApiUrl
+		}
 		proxyServer, err := proxy.NewProxyServer()
 		if err != nil {
 			panic(err)
 		}
-		go func() {
-			if err := proxyServer.ListenAndServe(); err != nil {
-				panic(err)
-			}
-		}()
-		go func() {
-			for {
-				select {
-				case event := <-proxyServer.EventsChannel:
-					eventBody, err := io.ReadAll(event.Body)
-					if err != nil {
-						log.Println("Error reading event body:", err)
-						continue
-					}
-					log.Println(
-						"Received event",
-						"\nStatus code:", event.StatusCode,
-						"\nHeaders:", event.Header,
-						"\nBody:", eventBody,
-					)
-				case lambdaResponse := <-proxyServer.LambdaResponseChannel:
-					responseBody, err := io.ReadAll(lambdaResponse.Body)
-					if err != nil {
-						log.Println("Error reading response body:", err)
-						continue
-					}
-					log.Println(
-						"Received lambda response",
-						"\nHeaders:", lambdaResponse.Header,
-						"\nBody:", responseBody,
-					)
-				}
-			}
-		}()
+		go proxyServer.ListenAndServe()
+		defer proxyServer.Shutdown(ctx)
+		go firetail.RecordReceiver(
+			proxyServer.RecordsChannel,
+			logsapi.DefaultMaxBatchSize,
+			firetailApiUrl,
+			os.Getenv("FIRETAIL_API_TOKEN"),
+		)
 	}
 
 	// awaitShutdown will block until a shutdown event is received, or the context is cancelled
