@@ -237,6 +237,8 @@ resource "aws_lambda_function" "extensions-demo-example-lambda-python" {
 
 The FireTail Lambda extension used to work in conjunction with a runtime-specific FireTail library which you would need to use in your Function code. The FireTail library outputted specifically formatted logs which the extension then received via the [Lambda Logs API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html). You can find a table of FireTail function libraries which correspond with a Lambda runtime in the table below. Below is a diagram depicting how the FireTail extension, Extensions API, Logs API and FireTail API interact over the lifetime of a Lambda.
 
+You can still use this mode by setting the environment variable `FIRETAIL_EXTENSION_LEGACY` to `true`.
+
 ![FireTail Lambda Extension Lifecycle Diagram](./docs/imgs/extension-lifecycle.svg)
 
 | Supported Runtimes   | Library                                                      |
