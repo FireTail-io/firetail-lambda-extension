@@ -8,6 +8,7 @@ provider:
   environment:
     FIRETAIL_API_TOKEN: ${param:firetail-token}
     FIRETAIL_EXTENSION_DEBUG: TRUE
+    AWS_LAMBDA_EXEC_WRAPPER: /opt/firetail-wrapper.sh
   tracing: true
   iamRoleStatements:
     - Effect: "Allow"
