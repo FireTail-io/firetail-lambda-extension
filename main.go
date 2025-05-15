@@ -2,7 +2,9 @@ package main
 
 import (
 	"firetail-lambda-extension/extensionsapi"
+	"firetail-lambda-extension/firetail"
 	"firetail-lambda-extension/logsapi"
+	"firetail-lambda-extension/proxy"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -35,16 +37,36 @@ func main() {
 	}
 	log.Println("Registered extension, ID:", extensionClient.ExtensionID)
 
-	// Create a logsApiClient, start it & remember to shut it down when we're done
-	logsApiClient, err := logsapi.NewClient(logsapi.Options{
-		ExtensionID:      extensionClient.ExtensionID,
-		LogServerAddress: "sandbox:1234",
-	})
-	if err != nil {
-		panic(err)
+	// In legacy mode, we use the logs API. Otherwise, we use the new proxy client.
+	if isLegacy, err := strconv.ParseBool(os.Getenv("FIRETAIL_EXTENSION_LEGACY")); err == nil && isLegacy {
+		// Create a logsApiClient, start it & remember to shut it down when we're done
+		logsApiClient, err := logsapi.NewClient(logsapi.Options{
+			ExtensionID:      extensionClient.ExtensionID,
+			LogServerAddress: "sandbox:1234",
+		})
+		if err != nil {
+			panic(err)
+		}
+		go logsApiClient.Start(ctx)
+		defer logsApiClient.Shutdown(ctx)
+	} else {
+		firetailApiUrl, firetailApiUrlSet := os.LookupEnv("FIRETAIL_API_URL")
+		if !firetailApiUrlSet {
+			firetailApiUrl = logsapi.DefaultFiretailApiUrl
+		}
+		proxyServer, err := proxy.NewProxyServer()
+		if err != nil {
+			panic(err)
+		}
+		go proxyServer.ListenAndServe()
+		defer proxyServer.Shutdown(ctx)
+		go firetail.RecordReceiver(
+			proxyServer.RecordsChannel,
+			logsapi.DefaultMaxBatchSize,
+			firetailApiUrl,
+			os.Getenv("FIRETAIL_API_TOKEN"),
+		)
 	}
-	go logsApiClient.Start(ctx)
-	defer logsApiClient.Shutdown(ctx)
 
 	// awaitShutdown will block until a shutdown event is received, or the context is cancelled
 	reason, err := awaitShutdown(extensionClient, ctx)

@@ -21,9 +21,8 @@ This example demonstrates how to setup a simple HTTP GET endpoint. Once you fetc
 ## Deploy
 
 ```bash
-pip3 install -t src/vendor -r aws_requirements.txt
 npm install
-serverless deploy
+serverless deploy --param firetail-token=YOUR_API_TOKEN
 ```
 
 The expected result should be similar to:

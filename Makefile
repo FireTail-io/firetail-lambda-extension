@@ -19,10 +19,11 @@ build:
 	rm -rf build
 	GOOS=linux GOARCH=${ARCH} go build -o build/extensions/firetail-extension-${ARCH}
 	chmod +x build/extensions/firetail-extension-${ARCH}
+	cp firetail-wrapper.sh build/firetail-wrapper.sh
 
 .PHONY: package
 package: build
-	cd build && zip -r ../build/firetail-extension-${ARCH}-${VERSION}.zip extensions/
+	cd build && zip -r ../build/firetail-extension-${ARCH}-${VERSION}.zip extensions/ firetail-wrapper.sh
 
 .PHONY: publish
 publish:
