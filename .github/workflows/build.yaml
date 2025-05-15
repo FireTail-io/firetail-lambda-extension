@@ -49,7 +49,7 @@ jobs:
           make package ARCH=${{ matrix.arch }} VERSION=draft
 
       - name: Upload package as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: firetail-lambda-extension-${{ matrix.arch }}-draft
           path: build/firetail-extension-${{ matrix.arch }}-draft.zip
