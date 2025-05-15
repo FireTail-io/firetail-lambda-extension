@@ -6,19 +6,9 @@
 
 ## Overview
 
-The FireTail Logging Extension receives AWS Lambda events and response payloads and sends them to the FireTail Logging API.
+The FireTail Logging Extension collects AWS Lambda events & response payloads by proxying the Lambda runtime API and sends them to the FireTail Logging API.
 
-The extension receives these events and response payloads by a runtime-specific FireTail library which you will need to use in your Function code. The FireTail library outputs specifically formatted logs which the extension then receives from the [Lambda Logs API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html). You can find a table of FireTail function libraries that correspond with a Lambda runtime in the [Function Libraries](#function-libraries) section. Below is a diagram depicting how the FireTail extension, Extensions API, Logs API and FireTail API interact over the lifetime of a Lambda.
-
-![Firetail Lambda Extension Lifecycle Diagram](./docs/imgs/extension-lifecycle.svg)
-
-
-
-## Function Libraries
-
-| Supported Runtimes   | Library                                                      |
-| -------------------- | ------------------------------------------------------------ |
-| Python 3.7, 3.8, 3.9, 3.10 | [github.com/FireTail-io/firetail-py-lambda](https://github.com/FireTail-io/firetail-py-lambda) |
+Includes a wrapper script, [firetail-wrapper.sh](./firetail-wrapper.sh), that you must use by setting the `AWS_LAMBDA_EXEC_WRAPPER` to `/opt/firetail-wrapper.sh`
 
 
 
@@ -141,19 +131,20 @@ For example, for `ARCH=amd64` and `VERSION=v1-1-0` this should yield:
 arn:aws:lambda:us-east-1:247286868737:layer:firetail-extension-x86_64-v1-1-0:1
 ```
 
-Regardless of how you add the Lambda Layer to your Lambda Function, you will also need to configure at least one environment variable: `FIRETAIL_API_TOKEN`.
+Regardless of how you add the Lambda Layer to your Lambda Function, you will also need to configure at least two environment variables: `AWS_LAMBDA_EXEC_WRAPPER` and `FIRETAIL_API_TOKEN`.
 
-If you are using not using the Firetail SaaS' default region then you will also need to set the environment variable `FIRETAIL_API_URL` appropriately. For example, for `us.firetail.app` the appropriate URL would be `https://api.logging.us-east-2.prod.firetail.app/logs/bulk`.
+If you are using not using the FireTail SaaS' default region then you will also need to set the environment variable `FIRETAIL_API_URL` appropriately. For example, for `us.firetail.app` the appropriate URL would be `https://api.logging.us-east-2.prod.firetail.app/logs/bulk`.
 
 Find below a full list of the environment variables used by the FireTail Lambda Extension:
 
-| Environment Variable     | Default Value                                               | Description                                                  |
-| ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------ |
-| FIRETAIL_API_TOKEN       | None                                                        | Your API token for the FireTail Logging API. If left unset, no logs will be sent to the Firetail Logging API. |
-| FIRETAIL_API_URL         | `https://api.logging.eu-west-1.prod.firetail.app/logs/bulk` | The URL of the FireTail Logging API. Note, if you are not using `firetail.app`'s default region this will need to be configured appropriately. |
-| FIRETAIL_EXTENSION_DEBUG | `false`                                                     | Enables debug logging from the extension if set to a value parsed as `true` by [strconv.ParseBool](https://pkg.go.dev/strconv#ParseBool). |
-| FIRETAIL_LOG_BUFFER_SIZE | `1000`                                                      | The maximum amount of logs the extension will hold in its buffer from which logs are batched and sent to FireTail. |
-| FIRETAIL_MAX_BATCH_SIZE  | `100`                                                       | The maximum size of a batch of logs to be sent to the FireTail logging API in one request. |
+| Environment Variable       | Default Value                                               | Description                                                  |
+| -------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
+| `AWS_LAMBDA_EXEC_WRAPPER`  | None                                                        | Must be set to `/opt/firetail-wrapper.sh`.                   |
+| `FIRETAIL_API_TOKEN`       | None                                                        | Your API token for the FireTail Logging API. If left unset, no logs will be sent to the FireTail Logging API |
+| `FIRETAIL_API_URL`         | `https://api.logging.eu-west-1.prod.firetail.app/logs/bulk` | The URL of the FireTail Logging API                          |
+| `FIRETAIL_EXTENSION_DEBUG` | `false`                                                     | Enables debug logging from the extension if set to a value parsed as `true` by [strconv.ParseBool](https://pkg.go.dev/strconv#ParseBool) |
+| `FIRETAIL_LOG_BUFFER_SIZE` | `1000`                                                      | The maximum amount of logs the extension will hold in its buffer from which logs are batched and sent to FireTail |
+| `FIRETAIL_MAX_BATCH_SIZE`  | `100`                                                       | The maximum size of a batch of logs to be sent to the FireTail logging API in one request |
 
 
 
@@ -228,6 +219,7 @@ resource "aws_lambda_function" "extensions-demo-example-lambda-python" {
 
         environment {
                 variables = {
+                        AWS_LAMBDA_EXEC_WRAPPER = "/opt/firetail-wrapper.sh"
                         FIRETAIL_API_TOKEN = "firetail-api-key",
                         FIRETAIL_API_URL = "https://api.logging.eu-west-1.prod.firetail.app/logs/bulk"
                 }
@@ -238,3 +230,18 @@ resource "aws_lambda_function" "extensions-demo-example-lambda-python" {
         ]
 }
 ```
+
+
+
+## Legacy Mode
+
+The FireTail Lambda extension used to work in conjunction with a runtime-specific FireTail library which you would need to use in your Function code. The FireTail library outputted specifically formatted logs which the extension then received via the [Lambda Logs API](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-logs-api.html). You can find a table of FireTail function libraries which correspond with a Lambda runtime in the table below. Below is a diagram depicting how the FireTail extension, Extensions API, Logs API and FireTail API interact over the lifetime of a Lambda.
+
+You can still use this mode by setting the environment variable `FIRETAIL_EXTENSION_LEGACY` to `true`.
+
+![FireTail Lambda Extension Lifecycle Diagram](./docs/imgs/extension-lifecycle.svg)
+
+| Supported Runtimes   | Library                                                      |
+| -------------------- | ------------------------------------------------------------ |
+| Python 3.7, 3.8, 3.9 | [github.com/FireTail-io/firetail-py-lambda](https://github.com/FireTail-io/firetail-py-lambda) |
+
