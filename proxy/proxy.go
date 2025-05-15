@@ -38,6 +38,7 @@ func NewProxyServer() (*ProxyServer, error) {
 		port:                  port,
 		eventsChannel:         make(chan *http.Response),
 		lambdaResponseChannel: make(chan *http.Request),
+		RecordsChannel:        make(chan firetail.Record),
 	}
 
 	r := chi.NewRouter()
