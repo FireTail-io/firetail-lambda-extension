@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -34,6 +35,7 @@ func getProxyHandler(urlMappingFunc func(r *http.Request) (*url.URL, error), req
 
 		// Send the request to the requestChannel with the copied body if the channel was provided
 		if requestChannel != nil {
+			log.Println("Captured lambda response", requestBodyCopy.String())
 			r.Body = io.NopCloser(strings.NewReader(requestBodyCopy.String()))
 			*requestChannel <- r
 		}
@@ -57,6 +59,7 @@ func getProxyHandler(urlMappingFunc func(r *http.Request) (*url.URL, error), req
 
 		// Send the response to the responseChannel with the copied body if the channel was provided
 		if responseChannel != nil {
+			log.Println("Captured event", responseBodyCopy.String())
 			resp.Body = io.NopCloser(strings.NewReader(responseBodyCopy.String()))
 			*responseChannel <- resp
 		}

@@ -36,9 +36,9 @@ func NewProxyServer() (*ProxyServer, error) {
 	ps := &ProxyServer{
 		runtimeEndpoint:       os.Getenv("AWS_LAMBDA_RUNTIME_API"),
 		port:                  port,
-		eventsChannel:         make(chan *http.Response),
-		lambdaResponseChannel: make(chan *http.Request),
-		RecordsChannel:        make(chan firetail.Record),
+		eventsChannel:         make(chan *http.Response, 1),
+		lambdaResponseChannel: make(chan *http.Request, 1),
+		RecordsChannel:        make(chan firetail.Record, 100),
 	}
 
 	r := chi.NewRouter()
