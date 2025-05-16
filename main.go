@@ -25,6 +25,10 @@ func main() {
 		log.Println("Firetail extension starting in debug mode.")
 	}
 
+	// Log the value of AWS_LAMBDA_EXEC_WRAPPER and AWS_LAMBDA_RUNTIME_API for debugging
+	log.Println("AWS_LAMBDA_EXEC_WRAPPER:", os.Getenv("AWS_LAMBDA_EXEC_WRAPPER"))
+	log.Println("AWS_LAMBDA_RUNTIME_API:", os.Getenv("AWS_LAMBDA_RUNTIME_API"))
+
 	// This context will be cancelled whenever a SIGTERM or SIGINT signal is received
 	// We'll use it for our requests to the extensions API & to shutdown the log server
 	ctx := getContext()
