@@ -21,6 +21,7 @@ func RecordReceiver(recordsChannel chan Record, maxBatchSize int, firetailApiUrl
 		}
 
 		// Give the batch to the batch callback. If it errs, we continue
+		log.Printf("Attempting to send batch of %d record(s) to Firetail...", len(recordsBatch))
 		recordsSent, err := SendRecordsToSaaS(recordsBatch, firetailApiUrl, firetailApiToken)
 		if err != nil {
 			log.Println("Error sending records to Firetail:", err.Error())

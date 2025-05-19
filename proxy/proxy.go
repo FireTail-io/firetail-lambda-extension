@@ -146,18 +146,18 @@ func (p *ProxyServer) recordAssembler() {
 
 		eventBody, err := io.ReadAll(event.Body)
 		if err != nil {
-			log.Println("Error reading event body:", err)
+			log.Println("Error reading event body:", err.Error())
 			continue
 		}
 		responseBody, err := io.ReadAll(lambdaResponse.Body)
 		if err != nil {
-			log.Println("Error reading response body:", err)
+			log.Println("Error reading response body:", err.Error())
 			continue
 		}
 
 		var recordResponse firetail.RecordResponse
 		if err := json.Unmarshal(responseBody, &recordResponse); err != nil {
-			log.Println("Error unmarshalling response body:", err)
+			log.Println("Error unmarshalling response body:", err.Error())
 			continue
 		}
 
