@@ -37,12 +37,12 @@ func main() {
 	if healthEndpoint := os.Getenv("FIRETAIL_API_URL_HEALTH"); healthEndpoint != "" {
 		resp, err := http.Get(healthEndpoint)
 		if err != nil {
-			log.Println("Error making request to health endpoint:", err)
+			log.Println("Error making request to health endpoint:", err.Error())
 		} else {
 			defer resp.Body.Close()
 			healthResponse, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				log.Println("Error reading health endpoint response:", err)
+				log.Println("Error reading health endpoint response:", err.Error())
 			} else {
 				log.Println("Health endpoint response:", strconv.Itoa(resp.StatusCode), string(healthResponse))
 			}
