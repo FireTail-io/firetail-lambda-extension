@@ -55,7 +55,7 @@ func main() {
 
 	// Create a Lambda Extensions API client & register our extension
 	extensionClient := extensionsapi.NewClient()
-	_, err := extensionClient.Register(ctx, extensionName)
+	_, err = extensionClient.Register(ctx, extensionName)
 	if err != nil {
 		panic(err)
 	}
