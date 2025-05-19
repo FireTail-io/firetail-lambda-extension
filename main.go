@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path"
 	"strconv"
@@ -18,11 +19,34 @@ func main() {
 	// Configure logging
 	extensionName := path.Base(os.Args[0])
 	log.SetPrefix(fmt.Sprintf("[%s] ", extensionName))
-	if isDebug, err := strconv.ParseBool(os.Getenv("FIRETAIL_EXTENSION_DEBUG")); err != nil || !isDebug {
+	isDebug, err := strconv.ParseBool(os.Getenv("FIRETAIL_EXTENSION_DEBUG"))
+	if err != nil || !isDebug {
 		// If we're not in debug mode, we'll just send the logs to the void
 		log.SetOutput(ioutil.Discard)
 	} else {
 		log.Println("Firetail extension starting in debug mode.")
+	}
+
+	// Log the value of AWS_LAMBDA_EXEC_WRAPPER and AWS_LAMBDA_RUNTIME_API for debugging
+	if isDebug {
+		log.Println("AWS_LAMBDA_EXEC_WRAPPER:", os.Getenv("AWS_LAMBDA_EXEC_WRAPPER"))
+		log.Println("AWS_LAMBDA_RUNTIME_API:", os.Getenv("AWS_LAMBDA_RUNTIME_API"))
+	}
+
+	// If the health endpoint env var is set, make a request to it to check it's reachable
+	if healthEndpoint := os.Getenv("FIRETAIL_API_URL_HEALTH"); healthEndpoint != "" {
+		resp, err := http.Get(healthEndpoint)
+		if err != nil {
+			log.Println("Error making request to health endpoint:", err)
+		} else {
+			defer resp.Body.Close()
+			healthResponse, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Println("Error reading health endpoint response:", err)
+			} else {
+				log.Println("Health endpoint response:", strconv.Itoa(resp.StatusCode), string(healthResponse))
+			}
+		}
 	}
 
 	// This context will be cancelled whenever a SIGTERM or SIGINT signal is received
