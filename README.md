@@ -2,13 +2,22 @@
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) [![Test and coverage](https://github.com/FireTail-io/firetail-lambda-extension/actions/workflows/codecov.yml/badge.svg?branch=defaults)](https://github.com/FireTail-io/firetail-lambda-extension/actions/workflows/codecov.yml) [![codecov](https://codecov.io/gh/FireTail-io/firetail-lambda-extension/branch/main/graph/badge.svg?token=QNWMOGA31B)](https://codecov.io/gh/FireTail-io/firetail-lambda-extension)
 
+The FireTail Lambda Extension collects AWS Lambda events and response payloads by proxying the Lambda Runtime API and sending them to the FireTail Logging API.
+
+**No code changes are required!** Simply add the FireTail Lambda Extension as a Lambda Layer and configure a few environment variables.
+
 
 
 ## Overview
 
-The FireTail Logging Extension collects AWS Lambda events & response payloads by proxying the Lambda runtime API and sends them to the FireTail Logging API.
+A wrapper script, [firetail-wrapper.sh](./firetail-wrapper.sh), is included in the FireTail Lambda Extension's ZIP file. You must use this script by setting the `AWS_LAMBDA_EXEC_WRAPPER` environment variable to `/opt/firetail-wrapper.sh`.
 
-Includes a wrapper script, [firetail-wrapper.sh](./firetail-wrapper.sh), that you must use by setting the `AWS_LAMBDA_EXEC_WRAPPER` to `/opt/firetail-wrapper.sh`
+The wrapper script sets the `AWS_LAMBDA_RUNTIME_API` environment variable to point to a proxy API provided by the FireTail Lambda Extension. This extension captures:
+
+- The response from the Lambda Runtime API in `GET /2018-06-01/runtime/invocation/next` calls, which includes the event that triggered your Lambda function.
+- The request made by the Lambda Runtime in `POST /2018-06-01/runtime/invocation/{requestId}/response` calls, which includes the response your Lambda function provided to the triggering event.
+
+![FireTail Lambda Extension Lifecycle Diagram](./docs/imgs/extension-lifecycle-proxy.svg)
 
 
 
