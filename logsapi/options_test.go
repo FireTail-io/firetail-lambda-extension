@@ -139,7 +139,7 @@ func TestDefaultBatchCallback(t *testing.T) {
 	require.Nil(t, err)
 
 	assert.Equal(t,
-		"{\"dateCreated\":0,\"executionTime\":3.142,\"request\":{\"body\":\"\",\"headers\":{},\"httpProtocol\":\"\",\"ip\":\"\",\"method\":\"\",\"uri\":\"https://\",\"resource\":\"\"},\"response\":{\"body\":\"{\\\"description\\\":\\\"test response body\\\"}\",\"headers\":{\"Test-Header-Name\":[\"Test-Header-Value\"]},\"statusCode\":200},\"version\":\"1.0.0-alpha\"}\n",
+		"{\"dateCreated\":0,\"executionTime\":3.142,\"request\":{\"body\":\"\",\"headers\":{},\"httpProtocol\":\"\",\"ip\":\"\",\"method\":\"\",\"uri\":\"https://\",\"resource\":\"\"},\"response\":{\"body\":\"{\\\"description\\\":\\\"test response body\\\"}\",\"headers\":{\"Test-Header-Name\":[\"Test-Header-Value\"]},\"statusCode\":200},\"version\":\"1.0.0-alpha\",\"metadata\":{\"source\":\"lambda-extension\"}}\n",
 		string(requestBody),
 	)
 }
