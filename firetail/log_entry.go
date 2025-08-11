@@ -25,6 +25,7 @@ type LogEntry struct {
 	Request       LogEntryRequest  `json:"request"`
 	Response      LogEntryResponse `json:"response"`
 	Version       LogEntryVersion  `json:"version"` // The version of the firetail logging schema used
+	Metadata      LogEntryMetadata `json:"metadata"`
 }
 
 type LogEntryRequest struct {
@@ -102,6 +103,10 @@ const (
 
 // The version of the firetail logging schema used
 type LogEntryVersion string
+
+type LogEntryMetadata struct {
+	Source string `json:"source"`
+}
 
 const (
 	The100Alpha LogEntryVersion = "1.0.0-alpha"
