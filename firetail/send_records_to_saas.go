@@ -40,6 +40,9 @@ func SendRecordsToSaaS(records []Record, apiUrl, apiKey string) (int, error) {
 				StatusCode: record.Response.StatusCode,
 			},
 			Version: The100Alpha,
+			Metadata: LogEntryMetadata{
+				Source: "lambda-extension",
+			},
 		})
 		if err != nil {
 			errs = multierror.Append(errs, fmt.Errorf("Err marshalling record to bytes, err: %s", err.Error()))

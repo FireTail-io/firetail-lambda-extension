@@ -31,6 +31,9 @@ func TestEncodeAndDecodeLogEntry(t *testing.T) {
 			StatusCode: 200,
 		},
 		Version: The100Alpha,
+		Metadata: LogEntryMetadata{
+			Source: "lambda-extension",
+		},
 	}
 
 	testLogEntryBytes, err := testLogEntry.Marshal()
